@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Status Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div id="app" class="w-full max-w-lg bg-white rounded-xl card p-6 md:p-8">
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-900 mb-2">
+                Application Status Tracker
+            </h1>
+            <p class="text-center text-gray-500">
+                Check the status of your application folder in real-time
+            </p>
+        </div>
+
+        <!-- Search Form Card -->
+        <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Search Status
+            </h2>
+            <form id="searchForm">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="input-group">
+                        <label for="lastNameInput" class="flex items-center">
+                            <span>Last Name</span>
+                            <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="text" id="lastNameInput" required
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                               placeholder="Enter last name">
+                    </div>
+                    <div class="input-group">
+                        <label for="firstNameInput" class="flex items-center">
+                            <span>First Name</span>
+                            <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="text" id="firstNameInput" required
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                               placeholder="Enter first name">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="input-group">
+                        <label for="middleNameInput">Middle Name</label>
+                        <input type="text" id="middleNameInput" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                               placeholder="Enter middle name">
+                    </div>
+                    <div class="input-group">
+                        <label for="birthdayInput" class="flex items-center">
+                            <span>Birthday</span>
+                            <span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="date" id="birthdayInput" required
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                    </div>
+                </div>
+                
+                <button type="submit" id="searchButton"
+                        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center glow">
+                    <span id="buttonText">Search Status</span>
+                    <span id="loadingText" class="sr-only">Searching, please wait...</span>
+                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </button>
+            </form>
+        </div>
+
+        <!-- Status Result Card -->
+        <div id="resultCard" class="bg-white p-6 rounded-lg border border-gray-300 hidden">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+                Application Folder Status
+            </h2>
+            
+            <div class="space-y-4">
+                <div class="flex justify-between items-center border-b pb-3">
+                    <span class="text-gray-600 font-medium">Folder Title:</span>
+                    <span id="folderTitleResult" class="text-gray-900 font-semibold text-right"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 font-medium">Status:</span>
+                    <span id="statusResult" class="text-gray-900 font-semibold"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-600 font-medium">Last Updated:</span>
+                    <span id="lastUpdatedResult" class="text-gray-900 font-semibold"></span>
+                </div>
+            </div>
+            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg hidden"></p>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-6 text-center">
+            <p class="text-sm text-gray-500">
+                Need help? Contact support at 
+                <a href="mailto:support@example.com" class="text-blue-600 hover:underline">support@example.com</a>
+            </p>
+        </div>
+
+        <!-- Message Box for Toasts -->
+        <div id="messageBox" class="message-box p-4 rounded-lg text-white font-medium" aria-live="polite" aria-atomic="true"></div>
+    </div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz4TybHr35h_dmITvJq3Nj9udbLTbNNdtJEHB-oKBVn-QO6ZPDXMNj4qSTkIs6MpG-A/exec";
+        
+        const FIELD_LAST_NAME = 'LAST_NAME';
+        const FIELD_FIRST_NAME = 'FIRST_NAME';
+        const FIELD_MIDDLE_NAME = 'MIDDLE_NAME';
+        const FIELD_BIRTHDAY = 'BIRTHDAY';
+        const FIELD_FOLDER_TITLE = 'FOLDER_TITLE';
+        const FIELD_STATUS = 'STATUS';
+
+        let lastSearchTime = 0;
+        const SEARCH_COOLDOWN = 2000;
+
+        const searchForm = document.getElementById('searchForm');
+        const searchButton = document.getElementById('searchButton');
+        const resultCard = document.getElementById('resultCard');
+        const folderTitleResult = document.getElementById('folderTitleResult');
+        const statusResult = document.getElementById('statusResult');
+        const lastUpdatedResult = document.getElementById('lastUpdatedResult');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const buttonText = document.getElementById('buttonText');
+        const matchMessage = document.getElementById('matchMessage');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            searchForm.addEventListener('submit', handleSearch);
+            document.getElementById('lastNameInput').focus();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+                handleSearch(e);
+            }
+        });
+
+        function showMessage(message, type = 'info') {
+            const box = document.getElementById('messageBox');
+            box.textContent = message;
+            box.className = 'message-box show';
+            
+            if (type === 'error') {
+                box.style.backgroundColor = '#dc2626';
+            } else if (type === 'success') {
+                box.style.backgroundColor = '#10b981';
+            } else {
+                box.style.backgroundColor = '#2563eb';
+            }
+
+            setTimeout(() => {
+                box.className = 'message-box';
+            }, 5000);
+        }
+
+        function setLoading(isLoading) {
+            searchButton.disabled = isLoading;
+            loadingSpinner.classList.toggle('hidden', !isLoading);
+            buttonText.textContent = isLoading ? 'Searching...' : 'Search Status';
+            
+            if (isLoading) {
+                searchButton.classList.add('glow');
+            } else {
+                searchButton.classList.remove('glow');
+            }
+        }
+
+        function createStatusPill(statusText) {
+            const safeStatusClass = statusText.replace(/\s+/g, '');
+            const pill = document.createElement('span');
+            pill.textContent = statusText;
+            pill.className = `status-pill status-${safeStatusClass}`;
+            return pill;
+        }
+
+        function validateInputs(lastName, firstName, birthday) {
+            if (!lastName || !firstName || !birthday) {
+                return { isValid: false, message: 'Please fill in all required fields: Last Name, First Name, and Birthday.' };
+            }
+            
+            const birthdayDate = new Date(birthday);
+            if (isNaN(birthdayDate.getTime())) {
+                return { isValid: false, message: 'Please enter a valid birthday.' };
+            }
+            
+            const today = new Date();
+            if (birthdayDate > today) {
+                return { isValid: false, message: 'Birthday cannot be in the future.' };
+            }
+            
+            return { isValid: true };
+        }
+
+        function displayResults(result) {
+            const data = result.data;
+            
+            folderTitleResult.textContent = data[FIELD_FOLDER_TITLE] || 'N/A';
+            
+            statusResult.innerHTML = ''; 
+            statusResult.appendChild(createStatusPill(data[FIELD_STATUS] || 'N/A'));
+            
+            lastUpdatedResult.textContent = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            matchMessage.textContent = result.message;
+            matchMessage.classList.remove('hidden');
+            resultCard.classList.remove('hidden');
+            
+            showMessage('Status retrieved successfully!', 'success');
+        }
+
+        function displayNoResults(message) {
+            folderTitleResult.textContent = 'Not Found';
+            statusResult.innerHTML = '<span class="text-red-600 font-medium">No Application Found</span>';
+            lastUpdatedResult.textContent = 'N/A';
+            matchMessage.classList.add('hidden');
+            resultCard.classList.remove('hidden');
+            showMessage(message || 'No matching application found.', 'error');
+        }
+
+        async function handleSearch(e) {
+            if (e) e.preventDefault();
+            
+            const now = Date.now();
+            if (now - lastSearchTime < SEARCH_COOLDOWN) {
+                showMessage('Please wait a moment before searching again.', 'error');
+                return;
+            }
+            lastSearchTime = now;
+            
+            setLoading(true);
+            resultCard.classList.add('hidden');
+            
+            const lastName = document.getElementById('lastNameInput').value.trim();
+            const firstName = document.getElementById('firstNameInput').value.trim();
+            const birthday = document.getElementById('birthdayInput').value;
+            const middleName = document.getElementById('middleNameInput').value.trim();
+
+            const validation = validateInputs(lastName, firstName, birthday);
+            if (!validation.isValid) {
+                showMessage(validation.message, 'error');
+                setLoading(false);
+                return;
+            }
+
+            if (!GAS_WEB_APP_URL) {
+                showMessage('Configuration Error: Please set your Google Apps Script Web App URL.', 'error');
+                setLoading(false);
+                return;
+            }
+
+            let url;
+            try {
+                url = new URL(GAS_WEB_APP_URL);
+            } catch (e) {
+                showMessage('Configuration Error: GAS Web App URL is invalid.', 'error');
+                setLoading(false);
+                return;
+            }
+
+            url.searchParams.append('ln', lastName);
+            url.searchParams.append('fn', firstName);
+            url.searchParams.append('bd', birthday);
+
+            try {
+                const response = await fetch(url.toString());
+                const result = await response.json();
+
+                if (result.status === 'success' && result.data) {
+                    displayResults(result);
+                } else {
+                    displayNoResults(result.message);
+                }
+
+            } catch (error) {
+                console.error("Fetch error:", error);
+                showMessage('Network error. Please check your connection and try again.', 'error');
+            } finally {
+                setLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>
