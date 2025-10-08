@@ -93,18 +93,12 @@
             <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg hidden"></p>
         </div>
 
-        <div class="mt-6 text-center">
-            <p class="text-sm text-gray-500">
-                Need help? Contact support at 
-                <a href="mailto:support@example.com" class="text-blue-600 hover:underline">support@example.com</a>
-            </p>
-        </div>
-
+        <!-- Message Box for Toasts -->
         <div id="messageBox" class="message-box p-4 rounded-lg text-white font-medium" aria-live="polite" aria-atomic="true"></div>
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyvS-TNgn0Uj_Sbl_8L-KCM0KvdgXiGOAVj_AQqVOBmhl5ieosXqmdTM6GP2kz5GzH8/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyzZ1EoDc-dqySY4YbtokiRCr9Eqh9y-qrS29LoQGrU7jYwF_q4PFqIzQrQ9qmpHGiE/exec";
         
         document.getElementById('searchForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -137,15 +131,7 @@
                     document.getElementById('matchMessage').textContent = result.message;
                     document.getElementById('resultCard').classList.remove('hidden');
                     
-                    // Show success message
-                    const messageBox = document.getElementById('messageBox');
-                    messageBox.textContent = 'Status retrieved successfully!';
-                    messageBox.className = 'message-box show';
-                    messageBox.style.backgroundColor = '#10b981';
-                    
-                    setTimeout(() => {
-                        messageBox.className = 'message-box';
-                    }, 5000);
+                    // Removed the success toast message
                 } else {
                     alert(result.message);
                 }
