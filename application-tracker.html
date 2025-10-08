@@ -5,7 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Application Status Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f4f7f9 0%, #e8edf2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+        .status-Submitted { background-color: #bfdbfe; color: #1e40af; }
+        .status-InReview { background-color: #fde68a; color: #b45309; }
+        .status-Approved { background-color: #d1fae5; color: #065f46; }
+        .status-Denied { background-color: #fee2e2; color: #991b1b; }
+        .status-Completed { background-color: #e0f2f1; color: #0e7490; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     <div id="app" class="w-full max-w-lg bg-white rounded-xl card p-6 md:p-8">
@@ -32,36 +60,44 @@
             <form id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="input-group">
-                        <label for="lastNameInput" class="flex items-center">
+                        <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
                             <span>Last Name</span>
                             <span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Enter last name">
+                        <input type="text" id="lastNameInput" required 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
+                               placeholder="Enter last name">
                     </div>
                     <div class="input-group">
-                        <label for="firstNameInput" class="flex items-center">
+                        <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
                             <span>First Name</span>
                             <span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Enter first name">
+                        <input type="text" id="firstNameInput" required 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
+                               placeholder="Enter first name">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div class="input-group">
-                        <label for="middleNameInput">Middle Name</label>
-                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="Enter middle name">
+                        <label for="middleNameInput" class="text-sm font-semibold text-gray-700 mb-1">Middle Name</label>
+                        <input type="text" id="middleNameInput" 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
+                               placeholder="Enter middle name">
                     </div>
                     <div class="input-group">
-                        <label for="birthdayInput" class="flex items-center">
+                        <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
                             <span>Birthday</span>
                             <span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <input type="date" id="birthdayInput" required 
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
                     </div>
                 </div>
                 
-                <button type="submit" id="searchButton" class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center glow">
+                <button type="submit" id="searchButton" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
                     <span id="buttonText">Search Status</span>
                     <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -95,7 +131,8 @@
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "hhttps://script.google.com/macros/s/AKfycbyDqu2YwlZc-wH80vl4SbfBOp7i2lAGgHzrhYLCyksBlhO9HA9D9pEtUJPlotKeq1kU/exec";
+        // UPDATE THIS URL WITH YOUR ACTUAL GAS WEB APP URL
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaNt-39Ti1oOeGae9V2slnBMkiOwgOcubeRg79HKcDlBIFcsJ9Gv46ZqHNcLzqplnF/exec";
         
         document.getElementById('searchForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -105,7 +142,7 @@
             const birthday = document.getElementById('birthdayInput').value;
 
             if (!lastName || !firstName || !birthday) {
-                alert('Please fill in all required fields.');
+                alert('Please fill in all required fields: Last Name, First Name, and Birthday.');
                 return;
             }
 
@@ -118,36 +155,58 @@
             buttonText.textContent = 'Searching...';
 
             try {
-                console.log('Testing GAS URL...');
+                // Test if GAS URL is set
+                if (GAS_WEB_APP_URL.includes('YOUR_SCRIPT_ID')) {
+                    throw new Error('Please update the GAS_WEB_APP_URL with your actual Google Apps Script URL');
+                }
+
                 const url = `${GAS_WEB_APP_URL}?ln=${encodeURIComponent(lastName)}&fn=${encodeURIComponent(firstName)}&bd=${encodeURIComponent(birthday)}`;
-                console.log('Request URL:', url);
+                console.log('Making request to:', url);
                 
                 const response = await fetch(url);
-                console.log('Response status:', response.status);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 
                 const result = await response.json();
-                console.log('Response data:', result);
+                console.log('Response received:', result);
 
                 if (result.status === 'success') {
+                    // Display the results
                     document.getElementById('folderTitleResult').textContent = result.data.FOLDER_TITLE || 'N/A';
-                    document.getElementById('statusResult').textContent = result.data.STATUS || 'N/A';
+                    
+                    // Create status pill
+                    const statusResult = document.getElementById('statusResult');
+                    statusResult.innerHTML = '';
+                    const statusPill = document.createElement('span');
+                    statusPill.textContent = result.data.STATUS || 'N/A';
+                    statusPill.className = `status-pill status-${(result.data.STATUS || '').replace(/\s+/g, '')}`;
+                    statusResult.appendChild(statusPill);
+                    
                     document.getElementById('matchMessage').textContent = result.message;
+                    document.getElementById('matchMessage').classList.remove('hidden');
                     document.getElementById('resultCard').classList.remove('hidden');
                 } else {
                     alert(result.message);
                 }
             } catch (error) {
-                console.error("Detailed error:", error);
-                alert('Connection failed. Please check: 1) GAS is deployed as "Anyone", 2) No browser extensions blocking requests');
+                console.error('Error:', error);
+                if (error.message.includes('GAS_WEB_APP_URL')) {
+                    alert('Configuration Error: ' + error.message + '\n\nGet your URL from: Deploy > Manage deployments in Google Apps Script');
+                } else {
+                    alert('Connection error: ' + error.message + '\n\nPlease check:\n1. GAS is deployed as "Anyone"\n2. Correct GAS URL is set\n3. No browser extensions blocking requests');
+                }
             } finally {
                 button.disabled = false;
                 spinner.classList.add('hidden');
                 buttonText.textContent = 'Search Status';
             }
+        });
+
+        // Focus on first input when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('lastNameInput').focus();
         });
     </script>
 </body>
