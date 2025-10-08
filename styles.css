@@ -1,0 +1,72 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #f4f7f9 0%, #e8edf2 100%);
+    min-height: 100vh;
+}
+
+.message-box {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    min-width: 250px;
+    z-index: 1000;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: opacity 0.3s ease-in-out;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.message-box.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.status-Submitted {
+    background-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.status-InReview {
+    background-color: #fde68a;
+    color: #b45309;
+}
+
+.status-Approved {
+    background-color: #d1fae5;
+    color: #065f46;
+}
+
+.status-Denied {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.status-Completed {
+    background-color: #e0f2f1;
+    color: #0e7490;
+}
+
+.input-group label {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.25rem;
+}
+
+.card {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.glow {
+    box-shadow: 0 0 15px rgba(37, 99, 235, 0.3);
+}
