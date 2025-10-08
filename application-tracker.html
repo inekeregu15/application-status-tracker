@@ -92,13 +92,10 @@
             </div>
             <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg hidden"></p>
         </div>
-
-        <!-- Message Box for Toasts -->
-        <div id="messageBox" class="message-box p-4 rounded-lg text-white font-medium" aria-live="polite" aria-atomic="true"></div>
     </div>
 
     <script>
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyzZ1EoDc-dqySY4YbtokiRCr9Eqh9y-qrS29LoQGrU7jYwF_q4PFqIzQrQ9qmpHGiE/exec";
+        const GAS_WEB_APP_URL = "hhttps://script.google.com/macros/s/AKfycbyDqu2YwlZc-wH80vl4SbfBOp7i2lAGgHzrhYLCyksBlhO9HA9D9pEtUJPlotKeq1kU/exec";
         
         document.getElementById('searchForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -121,23 +118,31 @@
             buttonText.textContent = 'Searching...';
 
             try {
+                console.log('Testing GAS URL...');
                 const url = `${GAS_WEB_APP_URL}?ln=${encodeURIComponent(lastName)}&fn=${encodeURIComponent(firstName)}&bd=${encodeURIComponent(birthday)}`;
+                console.log('Request URL:', url);
+                
                 const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
+                console.log('Response data:', result);
 
                 if (result.status === 'success') {
                     document.getElementById('folderTitleResult').textContent = result.data.FOLDER_TITLE || 'N/A';
                     document.getElementById('statusResult').textContent = result.data.STATUS || 'N/A';
                     document.getElementById('matchMessage').textContent = result.message;
                     document.getElementById('resultCard').classList.remove('hidden');
-                    
-                    // Removed the success toast message
                 } else {
                     alert(result.message);
                 }
             } catch (error) {
-                console.error("Fetch error:", error);
-                alert('Network error. Please check your connection and try again.');
+                console.error("Detailed error:", error);
+                alert('Connection failed. Please check: 1) GAS is deployed as "Anyone", 2) No browser extensions blocking requests');
             } finally {
                 button.disabled = false;
                 spinner.classList.add('hidden');
