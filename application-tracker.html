@@ -89,15 +89,10 @@
                     <span class="text-gray-600 font-medium">Status:</span>
                     <span id="statusResult" class="text-gray-900 font-semibold"></span>
                 </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-600 font-medium">Last Updated:</span>
-                    <span id="lastUpdatedResult" class="text-gray-900 font-semibold"></span>
-                </div>
             </div>
             <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg hidden"></p>
         </div>
 
-        <!-- Help Section -->
         <div class="mt-6 text-center">
             <p class="text-sm text-gray-500">
                 Need help? Contact support at 
@@ -105,235 +100,64 @@
             </p>
         </div>
 
-        <!-- Message Box for Toasts -->
         <div id="messageBox" class="message-box p-4 rounded-lg text-white font-medium" aria-live="polite" aria-atomic="true"></div>
     </div>
 
     <script>
         const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyvS-TNgn0Uj_Sbl_8L-KCM0KvdgXiGOAVj_AQqVOBmhl5ieosXqmdTM6GP2kz5GzH8/exec";
         
-        // These field names match your Google Apps Script configuration
-        const FIELD_LAST_NAME = 'LAST_NAME';
-        const FIELD_FIRST_NAME = 'FIRST_NAME';
-        const FIELD_MIDDLE_NAME = 'MIDDLE_NAME';
-        const FIELD_BIRTHDAY = 'BIRTHDAY';
-        const FIELD_FOLDER_TITLE = 'FOLDER_TITLE';
-        const FIELD_STATUS = 'STATUS';
-
-        // Application state
-        let lastSearchTime = 0;
-        const SEARCH_COOLDOWN = 2000; // 2 seconds
-
-        // DOM elements
-        const searchForm = document.getElementById('searchForm');
-        const searchButton = document.getElementById('searchButton');
-        const resultCard = document.getElementById('resultCard');
-        const folderTitleResult = document.getElementById('folderTitleResult');
-        const statusResult = document.getElementById('statusResult');
-        const lastUpdatedResult = document.getElementById('lastUpdatedResult');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const buttonText = document.getElementById('buttonText');
-        const matchMessage = document.getElementById('matchMessage');
-
-        // Event Listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            searchForm.addEventListener('submit', handleSearch);
-            document.getElementById('lastNameInput').focus();
-        });
-
-        // Keyboard shortcut (Ctrl+Enter to submit)
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-                handleSearch(e);
-            }
-        });
-
-        /**
-         * Utility to display temporary messages (toasts).
-         */
-        function showMessage(message, type = 'info') {
-            const box = document.getElementById('messageBox');
-            box.textContent = message;
-            box.className = 'message-box show';
+        document.getElementById('searchForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            // Set color based on type
-            if (type === 'error') {
-                box.style.backgroundColor = '#dc2626';
-            } else if (type === 'success') {
-                box.style.backgroundColor = '#10b981';
-            } else {
-                box.style.backgroundColor = '#2563eb';
-            }
-
-            // Hide after 5 seconds
-            setTimeout(() => {
-                box.className = 'message-box';
-            }, 5000);
-        }
-
-        /**
-         * Sets the loading state of the button.
-         */
-        function setLoading(isLoading) {
-            searchButton.disabled = isLoading;
-            loadingSpinner.classList.toggle('hidden', !isLoading);
-            buttonText.textContent = isLoading ? 'Searching...' : 'Search Status';
-            
-            if (isLoading) {
-                searchButton.classList.add('glow');
-            } else {
-                searchButton.classList.remove('glow');
-            }
-        }
-
-        /**
-         * Creates a styled pill for the status result.
-         */
-        function createStatusPill(statusText) {
-            const safeStatusClass = statusText.replace(/\s+/g, '');
-            const pill = document.createElement('span');
-            pill.textContent = statusText;
-            pill.className = `status-pill status-${safeStatusClass}`;
-            return pill;
-        }
-
-        /**
-         * Validate form inputs
-         */
-        function validateInputs(lastName, firstName, birthday) {
-            if (!lastName || !firstName || !birthday) {
-                return { isValid: false, message: 'Please fill in all required fields: Last Name, First Name, and Birthday.' };
-            }
-            
-            const birthdayDate = new Date(birthday);
-            if (isNaN(birthdayDate.getTime())) {
-                return { isValid: false, message: 'Please enter a valid birthday.' };
-            }
-            
-            const today = new Date();
-            if (birthdayDate > today) {
-                return { isValid: false, message: 'Birthday cannot be in the future.' };
-            }
-            
-            const minDate = new Date('1900-01-01');
-            if (birthdayDate < minDate) {
-                return { isValid: false, message: 'Please enter a valid birthday.' };
-            }
-            
-            return { isValid: true };
-        }
-
-        /**
-         * Display search results
-         */
-        function displayResults(result) {
-            const data = result.data;
-            
-            folderTitleResult.textContent = data[FIELD_FOLDER_TITLE] || 'N/A';
-            
-            // Clear previous content and append the styled pill
-            statusResult.innerHTML = ''; 
-            statusResult.appendChild(createStatusPill(data[FIELD_STATUS] || 'N/A'));
-            
-            // Set last updated time
-            lastUpdatedResult.textContent = new Date().toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            
-            matchMessage.textContent = result.message;
-            matchMessage.classList.remove('hidden');
-            resultCard.classList.remove('hidden');
-            
-            showMessage('Status retrieved successfully!', 'success');
-        }
-
-        /**
-         * Display no results message
-         */
-        function displayNoResults(message) {
-            folderTitleResult.textContent = 'Not Found';
-            statusResult.innerHTML = '<span class="text-red-600 font-medium">No Application Found</span>';
-            lastUpdatedResult.textContent = 'N/A';
-            matchMessage.classList.add('hidden');
-            resultCard.classList.remove('hidden');
-            showMessage(message || 'No matching application found.', 'error');
-        }
-
-        /**
-         * Main function to handle the search request to the GAS Web App
-         */
-        async function handleSearch(e) {
-            if (e) e.preventDefault();
-            
-            // Rate limiting
-            const now = Date.now();
-            if (now - lastSearchTime < SEARCH_COOLDOWN) {
-                showMessage('Please wait a moment before searching again.', 'error');
-                return;
-            }
-            lastSearchTime = now;
-            
-            setLoading(true);
-            resultCard.classList.add('hidden');
-            
-            // Get clean inputs
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
             const birthday = document.getElementById('birthdayInput').value;
-            const middleName = document.getElementById('middleNameInput').value.trim();
 
-            // Validate inputs
-            const validation = validateInputs(lastName, firstName, birthday);
-            if (!validation.isValid) {
-                showMessage(validation.message, 'error');
-                setLoading(false);
+            if (!lastName || !firstName || !birthday) {
+                alert('Please fill in all required fields.');
                 return;
             }
 
-            // Check if GAS URL is configured
-            if (!GAS_WEB_APP_URL) {
-                showMessage('Configuration Error: Please set your Google Apps Script Web App URL.', 'error');
-                setLoading(false);
-                return;
-            }
-
-            // Construct query URL for GAS Web App
-            let url;
-            try {
-                url = new URL(GAS_WEB_APP_URL);
-            } catch (e) {
-                showMessage('Configuration Error: GAS Web App URL is invalid.', 'error');
-                setLoading(false);
-                return;
-            }
-
-            // Add parameters as expected by your GAS script
-            url.searchParams.append('ln', lastName);
-            url.searchParams.append('fn', firstName);
-            url.searchParams.append('bd', birthday);
+            const button = document.getElementById('searchButton');
+            const spinner = document.getElementById('loadingSpinner');
+            const buttonText = document.getElementById('buttonText');
+            
+            button.disabled = true;
+            spinner.classList.remove('hidden');
+            buttonText.textContent = 'Searching...';
 
             try {
-                // Fetch data from the Google Apps Script Web App
-                const response = await fetch(url.toString());
+                const url = `${GAS_WEB_APP_URL}?ln=${encodeURIComponent(lastName)}&fn=${encodeURIComponent(firstName)}&bd=${encodeURIComponent(birthday)}`;
+                const response = await fetch(url);
                 const result = await response.json();
 
-                if (result.status === 'success' && result.data) {
-                    displayResults(result);
+                if (result.status === 'success') {
+                    document.getElementById('folderTitleResult').textContent = result.data.FOLDER_TITLE || 'N/A';
+                    document.getElementById('statusResult').textContent = result.data.STATUS || 'N/A';
+                    document.getElementById('matchMessage').textContent = result.message;
+                    document.getElementById('resultCard').classList.remove('hidden');
+                    
+                    // Show success message
+                    const messageBox = document.getElementById('messageBox');
+                    messageBox.textContent = 'Status retrieved successfully!';
+                    messageBox.className = 'message-box show';
+                    messageBox.style.backgroundColor = '#10b981';
+                    
+                    setTimeout(() => {
+                        messageBox.className = 'message-box';
+                    }, 5000);
                 } else {
-                    displayNoResults(result.message);
+                    alert(result.message);
                 }
-
             } catch (error) {
                 console.error("Fetch error:", error);
-                showMessage('Network error. Please check your connection and try again.', 'error');
+                alert('Network error. Please check your connection and try again.');
             } finally {
-                setLoading(false);
+                button.disabled = false;
+                spinner.classList.add('hidden');
+                buttonText.textContent = 'Search Status';
             }
-        }
+        });
     </script>
 </body>
 </html>
