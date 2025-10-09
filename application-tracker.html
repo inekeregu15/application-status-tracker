@@ -81,7 +81,7 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div class="input-group">
                         <label for="middleNameInput" class="text-sm font-semibold text-gray-700 mb-1">Middle Name</label>
                         <input type="text" id="middleNameInput" 
@@ -95,6 +95,21 @@
                         </label>
                         <input type="date" id="birthdayInput" required 
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                    </div>
+                </div>
+
+                <!-- Date Format Help -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                    <div class="flex items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <p class="text-sm font-medium text-blue-800">Date Format Help</p>
+                            <p class="text-xs text-blue-600">
+                                Use the date picker or enter as <strong>YYYY-MM-DD</strong> (e.g., 1982-01-22 for January 22, 1982)
+                            </p>
+                        </div>
                     </div>
                 </div>
                 
@@ -146,16 +161,31 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
                         <div><span class="text-yellow-700">Length of Service:</span> <span id="serviceLengthResult">N/A</span></div>
                         <div><span class="text-yellow-700">Date Received:</span> <span id="receivedDateResult">N/A</span></div>
+                        <div><span class="text-yellow-700">Birthday in records:</span> <span id="birthdayResult">N/A</span></div>
                     </div>
                 </div>
             </div>
             <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg"></p>
         </div>
+
+        <!-- Instructions Card -->
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
+            <h3 class="font-semibold text-green-800 mb-2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Ready to Search
+            </h3>
+            <p class="text-sm text-green-700">
+                Your application is now configured to work with the date format in your Google Sheet (DD-MMM-YYYY). 
+                The system will automatically convert dates for you.
+            </p>
+        </div>
     </div>
 
     <script>
         // UPDATE THIS URL WITH YOUR ACTUAL GAS WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwUmBNmx04mB3ZM0p-0IVea-y-rW5iIucSZYHzmztOLFz0-aXfnFpT7b6zePDNs60-A/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyX13NsDaSPvWlD3DFqSXR1GmlpPqC0qKHMr6nny59RVeBiVpxfjkzpcfqVqioqBx1s/exec";
         
         document.getElementById('searchForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -215,6 +245,7 @@
                     document.getElementById('unitResult').textContent = data['UNIT/REGION'] || 'N/A';
                     document.getElementById('serviceLengthResult').textContent = data['COMPUTED LENGTH OF SERVICE'] || 'N/A';
                     document.getElementById('receivedDateResult').textContent = data['RECEIVED'] || 'N/A';
+                    document.getElementById('birthdayResult').textContent = data['BIRTHDAY'] || 'N/A';
                     
                     document.getElementById('matchMessage').textContent = result.message;
                     document.getElementById('resultCard').classList.remove('hidden');
@@ -238,6 +269,19 @@
         // Focus on first input when page loads
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('lastNameInput').focus();
+            
+            // Set today's date as placeholder in the date field
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('birthdayInput').value = '1982-01-22'; // Example date
+        });
+
+        // Add date format validation
+        document.getElementById('birthdayInput').addEventListener('change', function(e) {
+            const dateValue = e.target.value;
+            if (dateValue && !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                alert('Please use YYYY-MM-DD format for the date (e.g., 1982-01-22)');
+                e.target.value = '';
+            }
         });
     </script>
 </body>
