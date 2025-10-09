@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optional Application Status Tracker</title>
+    <title>Application Status Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -32,11 +32,13 @@
         .status-Approved { background-color: #d1fae5; color: #065f46; }
         .status-Denied { background-color: #fee2e2; color: #991b1b; }
         .status-Completed { background-color: #e0f2f1; color: #0e7490; }
+        .status-OnHold { background-color: #f3e8ff; color: #7e22ce; }
+        .status-Returned { background-color: #fef3c7; color: #d97706; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-    <div id="app" class="w-full max-w-lg bg-white rounded-xl card p-6 md:p-8">
+    <div id="app" class="w-full max-w-2xl bg-white rounded-xl card p-6 md:p-8">
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 border-2 border-blue-200">
                 <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-12 w-12">
@@ -45,7 +47,7 @@
                 Application Status Tracker
             </h1>
             <p class="text-center text-gray-500">
-                Check the status of your application folder in real-time
+                Check the status of your retirement application folder
             </p>
         </div>
 
@@ -55,7 +57,7 @@
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                Search Status
+                Search Application Status
             </h2>
             <form id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -98,7 +100,7 @@
                 
                 <button type="submit" id="searchButton" 
                         class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
-                    <span id="buttonText">Search Status</span>
+                    <span id="buttonText">Search Application Status</span>
                     <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -107,32 +109,53 @@
             </form>
         </div>
 
-        <!-- Status Result Card -->
+        <!-- Enhanced Status Result Card -->
         <div id="resultCard" class="bg-white p-6 rounded-lg border border-gray-300 hidden">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                Application Folder Status
+                Application Details
             </h2>
             
             <div class="space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <span class="text-gray-600 font-medium">Folder Title:</span>
-                    <span id="folderTitleResult" class="text-gray-900 font-semibold text-right"></span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Folder Title:</span>
+                        <span id="folderTitleResult" class="text-gray-900 font-semibold text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Status:</span>
+                        <span id="statusResult" class="text-gray-900 font-semibold"></span>
+                    </div>
                 </div>
-                <div class="flex justify-between items-center">
-                    <span class="text-gray-600 font-medium">Status:</span>
-                    <span id="statusResult" class="text-gray-900 font-semibold"></span>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Rank:</span>
+                        <span id="rankResult" class="text-gray-900 font-semibold text-right"></span>
+                    </div>
+                    <div class="flex justify-between items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Unit/Region:</span>
+                        <span id="unitResult" class="text-gray-900 font-semibold text-right"></span>
+                    </div>
+                </div>
+                
+                <div class="bg-yellow-50 p-3 rounded-lg mt-4">
+                    <h3 class="font-semibold text-yellow-800 mb-2">Additional Information</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                        <div><span class="text-yellow-700">Length of Service:</span> <span id="serviceLengthResult">N/A</span></div>
+                        <div><span class="text-yellow-700">Date Received:</span> <span id="receivedDateResult">N/A</span></div>
+                    </div>
                 </div>
             </div>
-            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg hidden"></p>
+            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg"></p>
         </div>
     </div>
 
     <script>
         // UPDATE THIS URL WITH YOUR ACTUAL GAS WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxaNt-39Ti1oOeGae9V2slnBMkiOwgOcubeRg79HKcDlBIFcsJ9Gv46ZqHNcLzqplnF/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwUmBNmx04mB3ZM0p-0IVea-y-rW5iIucSZYHzmztOLFz0-aXfnFpT7b6zePDNs60-A/exec";
         
         document.getElementById('searchForm').addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -173,19 +196,27 @@
                 console.log('Response received:', result);
 
                 if (result.status === 'success') {
-                    // Display the results
-                    document.getElementById('folderTitleResult').textContent = result.data.FOLDER_TITLE || 'N/A';
+                    const data = result.data;
+                    
+                    // Display main information
+                    document.getElementById('folderTitleResult').textContent = data['FOLDER_TITLE'] || 'N/A';
                     
                     // Create status pill
                     const statusResult = document.getElementById('statusResult');
                     statusResult.innerHTML = '';
                     const statusPill = document.createElement('span');
-                    statusPill.textContent = result.data.STATUS || 'N/A';
-                    statusPill.className = `status-pill status-${(result.data.STATUS || '').replace(/\s+/g, '')}`;
+                    const statusText = data['STATUS'] || 'N/A';
+                    statusPill.textContent = statusText;
+                    statusPill.className = `status-pill status-${statusText.replace(/\s+/g, '')}`;
                     statusResult.appendChild(statusPill);
                     
+                    // Display additional information
+                    document.getElementById('rankResult').textContent = data['RANK'] || 'N/A';
+                    document.getElementById('unitResult').textContent = data['UNIT/REGION'] || 'N/A';
+                    document.getElementById('serviceLengthResult').textContent = data['COMPUTED LENGTH OF SERVICE'] || 'N/A';
+                    document.getElementById('receivedDateResult').textContent = data['RECEIVED'] || 'N/A';
+                    
                     document.getElementById('matchMessage').textContent = result.message;
-                    document.getElementById('matchMessage').classList.remove('hidden');
                     document.getElementById('resultCard').classList.remove('hidden');
                 } else {
                     alert(result.message);
@@ -200,7 +231,7 @@
             } finally {
                 button.disabled = false;
                 spinner.classList.add('hidden');
-                buttonText.textContent = 'Search Status';
+                buttonText.textContent = 'Search Application Status';
             }
         });
 
