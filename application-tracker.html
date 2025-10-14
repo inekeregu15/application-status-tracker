@@ -147,7 +147,6 @@
         <!-- Footer -->
         <div class="text-center text-xs text-gray-400 mt-8 border-t pt-4">
             <p>PNP Retirement and Benefits Administration Service (PRBS)</p>
-            <!-- Removed: <p>For inquiries, please contact your respective regional office.</p> -->
         </div>
     </div>
 
@@ -174,7 +173,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwjy6dudpKuW3v2qjGkRAdxXY7XSVSBw5OrBIpMuxoui5G3ABl3kX78CVPzz0l_3SKa/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxECXMiznl_cVuVO3aP_AiS24ZWYp4QR0wkL6xkIzb28azr4dgsZVt1QXKBX4gQpCRB/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -193,20 +192,20 @@
         const modalMessage = document.getElementById('modalMessage');
 
         // --- MOCK DATA (FOR DEMO/TESTING ONLY) ---
+        // The mock data remains in case you search for Juan Dela Cruz's details manually later
         const MOCK_RESULTS = [{
-                'FULL NAME': 'DELA CRUZ, Juan Santos (Sample Application)', 
+                'FULL NAME': 'DELA CRUZ, Juan Santos', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
-                'STATUS': 'On Hold', // Current status for demonstration
-                'EFFECTIVITY DATE': 'October 16, 2026', 
+                'STATUS': 'Completed', 
+                'EFFECTIVITY DATE': 'October 15, 2025', 
                 'DATE RECEIVED': 'October 2, 2025', 
                 'DATE REVIEW': 'October 3, 2025', 
-                // Inactive exceptions
                 'RETURNED WITH DISCREPANCY': 'N/A', 
-                'ON HOLD': 'October 6, 2025', // This one is active
+                'ON HOLD': 'N/A', 
                 'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'N/A', 
-                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
+                'DATE FORWARDED IN TCDA': 'October 12, 2025', 
+                'DATE FORWARDED IN NAPOLCOM': 'October 14, 2025' 
             }
         ];
 
@@ -258,6 +257,7 @@
             const statusText = data['STATUS'] || 'Unknown';
             // Sanitize status text for CSS class name
             const statusClass = statusText.replace(/\s+/g, '');
+            // Display the FULL NAME
             const fullName = data['FULL NAME'] ? `<h3 class="text-lg font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
 
             // Helper function to determine if a status step is active (has a date other than 'N/A')
@@ -293,6 +293,7 @@
             };
 
             // --- CONDITIONAL EXCEPTION RENDERING LOGIC ---
+            // Only show one of the three exception fields if it is active.
             const isReturnedActive = isStatusActive('RETURNED WITH DISCREPANCY');
             const isOnHoldActive = isStatusActive('ON HOLD');
             const isPulledOutActive = isStatusActive('PULL-OUT OF APPLICATION');
@@ -307,7 +308,6 @@
             } else if (isPulledOutActive) {
                 exceptionEntryHtml = createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true);
             }
-            // If none are active, exceptionEntryHtml remains empty, and nothing is rendered.
             // ---------------------------------------------
 
 
@@ -379,15 +379,17 @@
             searchButton.disabled = true;
 
             try {
-                // We are prioritizing the mock data display for the sample request
-                if (true) { // Always run mock data for demonstration
+                // Since the form is no longer auto-submitted, we check if the user entered the mock data's details
+                if (lastName.toUpperCase() === 'DELA CRUZ' && 
+                    firstName.toUpperCase() === 'JUAN' &&
+                    (middleName.toUpperCase() === 'SANTOS' || middleName.trim() === '') && // Allow search without middle name
+                    birthday === '1985-05-20') { 
+
                     // --- MOCK DATA SIMULATION ---
                     const latestResult = [MOCK_RESULTS[0]]; 
-                    // Mock message removed as requested
-                    const mockMessage = ""; 
+                    const mockMessage = "Showing mock data for demonstration. Status is: Completed."; 
                         
                     displayResults(latestResult, mockMessage);
-                    // We don't return here so the finally block can reset the button state
                 } 
                 // Original external API logic (commented out for sample display)
                 /*
@@ -396,6 +398,10 @@
                 }
                 */
                 else {
+                    // Show a simulated "not found" if the user didn't enter the mock data
+                    showMessage('Application Not Found', 'No matching applications were found for the provided details. (Simulated API response)', 'info');
+                    
+                    /* Original API logic:
                     const url = new URL(GAS_WEB_APP_URL);
                     url.searchParams.append('ln', lastName);
                     url.searchParams.append('fn', firstName);
@@ -433,6 +439,7 @@
                     } else {
                         showMessage('Application Not Found', result.message || 'No matching applications were found for the provided details.', 'info');
                     }
+                    */
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -486,18 +493,8 @@
 
         // --- PAGE INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Auto-fill mock data for sample display
-            document.getElementById('firstNameInput').value = 'Juan';
-            document.getElementById('lastNameInput').value = 'Dela Cruz';
-            document.getElementById('birthdayInput').value = '1985-05-20'; // Example date
-            
-            // Automatically submit the form to display the sample result
-            // Use requestSubmit() if available, otherwise dispatch a synthetic submit event
-            if (searchForm.requestSubmit) {
-                searchForm.requestSubmit(searchButton);
-            } else {
-                searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-            }
+            // Set focus to the first input when the page loads, leaving fields blank.
+            document.getElementById('lastNameInput').focus();
         });
     </script>
 </body>
