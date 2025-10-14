@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwvm65fyxROsbV44IlaFHRLnoRLlyjfiKwViNdM2nwjf2a0jqOE3Zi1g_MbJkIuXNvL/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxtnR7iPpo6VHYTzt2jYx9kkn-DmLZgTGnN7lgwWa88yT8PGAvW1QLUtMKAAuBYq41h/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -193,15 +193,17 @@
         const modalMessage = document.getElementById('modalMessage');
 
         // --- MOCK DATA (FOR DEMO/TESTING ONLY) ---
-        // MOCK data now uses the LASTNAME, FIRSTNAME MIDDLENAME format.
         const MOCK_RESULTS = [{
                 'FULL NAME': 'DELA CRUZ, Juan Santos (Record 1/2 - Older)', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
                 'STATUS': 'In Review', 
                 'EFFECTIVITY DATE': 'October 16, 2026', 
-                'DATE RECEIVED': 'September 15, 2025', // OLDER
+                'DATE RECEIVED': 'September 15, 2025', 
                 'DATE REVIEW': 'September 16, 2025', 
+                'RETURNED WITH DISCREPANCY': 'N/A',
+                'ON HOLD': 'N/A',
+                'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'September 17, 2025', 
                 'DATE FORWARDED IN NAPOLCOM': 'October 2, 2025' 
             },
@@ -211,8 +213,12 @@
                 'UNIT/REGION': 'Camp Crame',
                 'STATUS': 'Submitted',
                 'EFFECTIVITY DATE': 'January 1, 2027',
-                'DATE RECEIVED': 'October 10, 2025', // LATEST
+                'DATE RECEIVED': 'October 10, 2025', 
                 'DATE REVIEW': 'N/A',
+                // Example: ON HOLD is active (Red)
+                'RETURNED WITH DISCREPANCY': 'N/A',
+                'ON HOLD': 'December 1, 2025',
+                'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'N/A',
                 'DATE FORWARDED IN NAPOLCOM': 'N/A'
             }
@@ -265,9 +271,43 @@
         function createResultCard(data, index) {
             const statusText = data['STATUS'] || 'Unknown';
             const statusClass = statusText.replace(/\s+/g, '');
-            // The FULL NAME field is now consistently formatted by the server/mock logic
             const fullName = data['FULL NAME'] ? `<h3 class="text-lg font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
+
+            // Helper function to determine if a status step is active (has a date)
+            const isStatusActive = (key) => data[key] && data[key] !== 'N/A';
             
+            // Helper function to create a timeline entry (blue for standard, red for exception)
+            const createTimelineEntry = (label, key, isException = false) => {
+                const isActive = isStatusActive(key);
+                // Determine classes for label and date
+                let labelClass = isException ? 'text-red-700 font-bold' : 'text-blue-700 font-medium';
+                // Date class: Red Semibold if active and exception, Gray Semibold if active and standard, Gray/Normal otherwise
+                let dateClass = isActive 
+                    ? (isException ? 'text-red-600 font-semibold' : 'text-gray-800 font-semibold') 
+                    : 'text-gray-800';
+
+                // If not active and it's an exception item, de-emphasize with gray colors
+                if (!isActive && isException) {
+                    labelClass = 'text-gray-600 font-medium';
+                    dateClass = 'text-gray-500';
+                }
+
+                // If not active and it's a standard item, keep the standard blue label but let the date default to gray-800
+                if (!isActive && !isException) {
+                    // Retain text-blue-700 for the label even when inactive for clarity of the standard flow
+                    labelClass = 'text-blue-700 font-medium'; 
+                    // dateClass remains 'text-gray-800' from the initial assignment
+                }
+
+
+                return `
+                    <div class="flex justify-between">
+                        <span class="${labelClass}">${label}:</span>
+                        <span class="${dateClass}">${data[key] || 'N/A'}</span>
+                    </div>
+                `;
+            };
+
             return `
                 <div class="bg-white p-6 rounded-xl border-t-4 border-blue-600 shadow-md">
                     ${fullName}
@@ -294,10 +334,17 @@
                         <div class="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
                             <h4 class="font-semibold text-blue-800 mb-2">Detailed Status Timeline</h4>
                             <div class="space-y-2 text-sm">
-                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Received:</span><span class="text-gray-800">${data['DATE RECEIVED'] || 'N/A'}</span></div>
-                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Review:</span><span class="text-gray-800">${data['DATE REVIEW'] || 'N/A'}</span></div>
-                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Forwarded (TCDA):</span><span class="text-gray-800">${data['DATE FORWARDED IN TCDA'] || 'N/A'}</span></div>
-                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Forwarded (NAPOLCOM):</span><span class="text-gray-800">${data['DATE FORWARDED IN NAPOLCOM'] || 'N/A'}</span></div>
+                                ${createTimelineEntry('Date Received', 'DATE RECEIVED')}
+                                ${createTimelineEntry('Date Review', 'DATE REVIEW')}
+                                
+                                <!-- New Exception Statuses (Red and Bold if active) -->
+                                ${createTimelineEntry('RETURNED WITH DISCREPANCY', 'RETURNED WITH DISCREPANCY', true)}
+                                ${createTimelineEntry('ON HOLD', 'ON HOLD', true)}
+                                ${createTimelineEntry('PULL-OUT OF APPLICATION', 'PULL-OUT OF APPLICATION', true)}
+
+                                <!-- Final Forwarding Steps -->
+                                ${createTimelineEntry('Date Forwarded (TCDA)', 'DATE FORWARDED IN TCDA')}
+                                ${createTimelineEntry('Date Forwarded (NAPOLCOM)', 'DATE FORWARDED IN NAPOLCOM')}
                             </div>
                         </div>
                     </div>
@@ -329,7 +376,7 @@
             try {
                 if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
                     // --- MOCK DATA SIMULATION (LATEST ONLY) ---
-                    // Record 2/2 has the LATEST date (Oct 10, 2025). We only return this one.
+                    // Record 2/2 is the latest one.
                     const latestResult = [MOCK_RESULTS[1]]; 
                     const mockMessage = latestResult.length > 1 
                         ? "Using mock data. Multiple records were found, but only the **latest one** based on Date Received is displayed."
@@ -428,9 +475,6 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Set focus on the first input
             document.getElementById('firstNameInput').focus();
-            
-            // Removed lines setting example data. Fields now start blank.
-            // Also removed the initial call to displayResults to start with a clean form.
         });
     </script>
 </body>
