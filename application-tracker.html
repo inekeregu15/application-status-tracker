@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzszaH6kDR9kwUU4hySPifRgGrv6Ocu5qPHqYakxvVLwedV4bOZYd_7q6KoturEZ9bU/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwvm65fyxROsbV44IlaFHRLnoRLlyjfiKwViNdM2nwjf2a0jqOE3Zi1g_MbJkIuXNvL/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -422,23 +422,15 @@
             resultsContainer.innerHTML = '';
             matchMessage.classList.add('hidden');
             document.getElementById('lastNameInput').focus();
-            // Reset to example date
-            document.getElementById('birthdayInput').value = '1982-01-22';
         });
 
         // --- PAGE INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('lastNameInput').focus();
-            // Set example data for easy testing/demo
-            document.getElementById('firstNameInput').value = 'Juan';
-            document.getElementById('middleNameInput').value = 'Santos';
-            document.getElementById('lastNameInput').value = 'Dela Cruz';
-            document.getElementById('birthdayInput').value = '1982-01-22';
+            // Set focus on the first input
+            document.getElementById('firstNameInput').focus();
             
-            // Display only the LATEST mock result on load to show the intended single-result format
-            const latestResult = [MOCK_RESULTS[1]]; 
-            displayResults(latestResult, "Using mock data. Multiple records were found, but only the **latest one** based on Date Received is displayed.");
-            resultsArea.classList.remove('hidden');
+            // Removed lines setting example data. Fields now start blank.
+            // Also removed the initial call to displayResults to start with a clean form.
         });
     </script>
 </body>
