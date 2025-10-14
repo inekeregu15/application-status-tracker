@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzr7_c-MiWvjRly_la8TDBlz1LeMYiEWizjV62a19KsAy_ryVQ1L_u7ehsCaHBRpnOu/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkCuTf4nRyEGoaywH2uQQvr3nS2wGkfvkWnJxwUnVSZSs-kcChFUYZe4S-IC1_VGVw/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -197,14 +197,15 @@
                 'FULL NAME': 'DELA CRUZ, Juan Santos (Sample Application)', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
-                'STATUS': 'Returned with Discrepancy', // Current status set to an exception for demonstration
+                'STATUS': 'On Hold', // Current status set to 'On Hold' for demonstration
                 'EFFECTIVITY DATE': 'October 16, 2026', 
-                'DATE RECEIVED': 'October 2, 2025', // Date provided in user's prompt
+                'DATE RECEIVED': 'October 2, 2025', 
                 'DATE REVIEW': 'October 3, 2025', 
-                // ACTIVE Exception status: Will be shown in red font
-                'RETURNED WITH DISCREPANCY': 'October 5, 2025', 
-                // INACTIVE Exception statuses: Will be HIDDEN from the timeline
-                'ON HOLD': 'N/A', 
+                // Inactive exception (Now visible with Red label/Gray N/A date)
+                'RETURNED WITH DISCREPANCY': 'N/A', 
+                // Active exception (Visible with Bold Red label/Bold Red date)
+                'ON HOLD': 'October 6, 2025', 
+                // Inactive exception (Now visible with Red label/Gray N/A date)
                 'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'N/A', 
                 'DATE FORWARDED IN NAPOLCOM': 'N/A' 
@@ -264,27 +265,30 @@
             // Helper function to determine if a status step is active (has a date other than 'N/A')
             const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
             
-            // Helper function to create a timeline entry (blue for standard, red for exception)
+            /**
+             * Helper function to create a timeline entry.
+             * Exception labels are always bold red, but their date is only bold red if active.
+             * Standard labels are blue, with a bold date if active, or gray if N/A.
+             */
             const createTimelineEntry = (label, key, isException = false) => {
                 const isActive = isStatusActive(key);
 
-                // --- LOGIC: Hide the line if it is an inactive exception status (N/A) ---
-                if (isException && !isActive) {
-                    return ''; // Returns an empty string, hiding the element
-                }
-                
                 // Determine classes for label and date
-                let labelClass = isException ? 'text-red-700 font-bold' : 'text-blue-700 font-medium';
+                let labelClass = isException ? 'text-red-800 font-bold' : 'text-blue-700 font-medium';
+                let dateClass;
                 
-                // Date class: Red Semibold if active and exception, Gray Semibold/Normal otherwise
-                let dateClass = isActive 
-                    ? (isException ? 'text-red-600 font-semibold' : 'text-gray-800 font-semibold') 
-                    : 'text-gray-800'; 
-                
-                // For standard entries with N/A, we still show the label in blue/date in gray
-                if (!isActive && !isException) {
-                    labelClass = 'text-blue-700 font-medium';
-                    dateClass = 'text-gray-500'; // Make N/A date slightly lighter gray
+                if (isActive) {
+                    // Active Status (Standard or Exception)
+                    dateClass = isException ? 'text-red-800 font-semibold' : 'text-gray-800 font-semibold';
+                } else {
+                    // Inactive Status ('N/A')
+                    if (isException) {
+                        // Inactive Exception: Red label, but light gray N/A date
+                        dateClass = 'text-gray-500'; 
+                    } else {
+                        // Inactive Standard: Blue label, light gray N/A date
+                        dateClass = 'text-gray-500'; 
+                    }
                 }
 
 
@@ -322,15 +326,16 @@
                         <div class="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
                             <h4 class="font-semibold text-blue-800 mb-2">Detailed Status Timeline</h4>
                             <div class="space-y-2 text-sm">
+                                <!-- Standard Statuses (Always visible, Blue label) -->
                                 ${createTimelineEntry('Date Received', 'DATE RECEIVED')}
                                 ${createTimelineEntry('Date Review', 'DATE REVIEW')}
                                 
-                                <!-- Exception Statuses (Hidden unless active/has a date, shown in red) -->
+                                <!-- Exception Statuses (Always visible, Red label) -->
                                 ${createTimelineEntry('Returned with Discrepancy', 'RETURNED WITH DISCREPANCY', true)}
                                 ${createTimelineEntry('On Hold', 'ON HOLD', true)}
                                 ${createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true)}
 
-                                <!-- Final Forwarding Steps (Shown even if N/A) -->
+                                <!-- Final Forwarding Steps (Always visible, Blue label) -->
                                 ${createTimelineEntry('Date Forwarded (TCDA)', 'DATE FORWARDED IN TCDA')}
                                 ${createTimelineEntry('Date Forwarded (NAPOLCOM)', 'DATE FORWARDED IN NAPOLCOM')}
                             </div>
@@ -369,7 +374,7 @@
                 if (true) { // Always run mock data for demonstration
                     // --- MOCK DATA SIMULATION ---
                     const latestResult = [MOCK_RESULTS[0]]; 
-                    const mockMessage = "Simulated search result using mock data. Note the **red text** for 'Returned with Discrepancy'.";
+                    const mockMessage = "Simulated search result using mock data. Note the **red text** for 'On Hold' and visible, red-labeled inactive exceptions.";
                         
                     displayResults(latestResult, mockMessage);
                     // We don't return here so the finally block can reset the button state
