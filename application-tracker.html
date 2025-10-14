@@ -31,12 +31,53 @@
         /* Custom Status Colors for clarity */
         .status-Submitted { background-color: #bfdbfe; color: #1e40af; } /* Blue */
         .status-InReview { background-color: #fde68a; color: #b45309; } /* Yellow/Amber */
-        .status-Approved { background-color: #d1fae5; color: #065f46; } /* Green */
+        .status-Approved, .status-Completed { background-color: #d1fae5; color: #065f46; } /* Green/Completed */
         .status-Denied { background-color: #fee2e2; color: #991b1b; } /* Red */
-        .status-Completed { background-color: #e0f2f1; color: #0e7490; } /* Cyan */
         .status-OnHold { background-color: #f3e8ff; color: #7e22ce; } /* Purple */
-        .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; } /* Orange/Yellow for Returned */
+        .status-ReturnedwithDiscrepancy, .status-Pull-OutofApplication { background-color: #fef3c7; color: #d97706; } /* Warning/Orange */
         .hidden { display: none !important; }
+
+        /* Timeline Styling */
+        .timeline-step {
+            position: relative;
+            padding-left: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+        .timeline-step:last-child {
+            padding-bottom: 0;
+        }
+        .timeline-dot {
+            position: absolute;
+            top: 0.2rem;
+            left: -0.1rem;
+            width: 0.6rem;
+            height: 0.6rem;
+            border-radius: 9999px;
+            background-color: #9ca3af; /* Gray for inactive */
+            z-index: 10;
+        }
+        .timeline-line {
+            position: absolute;
+            left: 0.1rem;
+            top: 0.8rem;
+            bottom: 0;
+            width: 2px;
+            background-color: #e5e7eb; /* Light gray line */
+        }
+        .timeline-step:last-child .timeline-line {
+            display: none; /* Hide line for the last step */
+        }
+        /* Active/Exception styles */
+        .timeline-step.active .timeline-dot {
+            background-color: #10b981; /* Green for active step */
+        }
+        .timeline-step.exception .timeline-dot,
+        .timeline-step.exception .timeline-line {
+            background-color: #f59e0b; /* Amber for exception step */
+        }
+        .timeline-step.exception .timeline-dot {
+            border: 2px solid #f97316; /* Orange border for clarity */
+        }
 
         /* Modal animation */
         #messageModal {
@@ -166,16 +207,16 @@
                         OK
                     </button>
                 </div>
-            </div>a
+            </div>
         </div>
     </div>
 
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzzh_PbVZV1fj1_O7ftGDTr0u21DQz7XFWrro1Nl3Kfkyi1_mtmKxR6nP2KVx5Lq5uQ/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwB0gtkl0ZooQeZP06FkFvYG-i26M_WMM8yxi1E_T6XJF5vnkn7ciyCqoIL8y7onkSV/exec";
 
-        // --- DOM ELEMENT REFERENCES ---
+        // --- DOM ELEMENT REFERENCES (same as before) ---
         const searchForm = document.getElementById('searchForm');
         const searchButton = document.getElementById('searchButton');
         const clearButton = document.getElementById('clearButton');
@@ -191,9 +232,10 @@
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
 
-        // --- MOCK DATA (FOR DEMO/TESTING ONLY) ---
-        // The mock data remains in case you search for Juan Dela Cruz's details manually later
+        // --- MOCK DATA (UPDATED) ---
+        // Note: Full names and birthdays are mocked for testing the search functionality.
         const MOCK_RESULTS = [{
+                // Profile 1: Juan Dela Cruz (Completed Status - Both forwarding dates active)
                 'FULL NAME': 'DELA CRUZ, Juan Santos', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
@@ -206,11 +248,56 @@
                 'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'October 12, 2025', 
                 'DATE FORWARDED IN NAPOLCOM': 'October 14, 2025' 
+            },
+            {
+                // Profile 2: Maria Dela Rosa (On Hold Status - Exception active)
+                'FULL NAME': 'DELA ROSA, Maria S.', 
+                'RANK': 'Police Officer I', 
+                'UNIT/REGION': 'PRO-4A', 
+                'STATUS': 'OnHold', 
+                'EFFECTIVITY DATE': 'June 1, 2026', 
+                'DATE RECEIVED': 'January 10, 2026', 
+                'DATE REVIEW': 'February 5, 2026', 
+                'RETURNED WITH DISCREPANCY': 'N/A', 
+                'ON HOLD': 'March 1, 2026 (Missing Clearance document)', 
+                'PULL-OUT OF APPLICATION': 'N/A',
+                'DATE FORWARDED IN TCDA': 'N/A', 
+                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
+            },
+            {
+                // Profile 3: Ricardo S. Reyes (In Review Status - No forwarding dates, no exceptions)
+                'FULL NAME': 'REYES, Ricardo S.', 
+                'RANK': 'Police Colonel', 
+                'UNIT/REGION': 'PRO-3', 
+                'STATUS': 'InReview', 
+                'EFFECTIVITY DATE': 'May 10, 2027', 
+                'DATE RECEIVED': 'March 1, 2027', 
+                'DATE REVIEW': 'March 15, 2027', 
+                'RETURNED WITH DISCREPANCY': 'N/A', 
+                'ON HOLD': 'N/A', 
+                'PULL-OUT OF APPLICATION': 'N/A',
+                'DATE FORWARDED IN TCDA': 'N/A', 
+                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
+            },
+            {
+                // Profile 4: Ramon Diaz (Returned with Discrepancy Status - NEW)
+                'FULL NAME': 'DIAZ, Ramon F.', 
+                'RANK': 'Police Lieutenant Colonel', 
+                'UNIT/REGION': 'Camp Crame', 
+                'STATUS': 'ReturnedwithDiscrepancy', 
+                'EFFECTIVITY DATE': 'January 1, 2028', 
+                'DATE RECEIVED': 'October 1, 2027', 
+                'DATE REVIEW': 'October 20, 2027', 
+                'RETURNED WITH DISCREPANCY': 'October 25, 2027 (Missing last 3 months pay slips)', 
+                'ON HOLD': 'N/A', 
+                'PULL-OUT OF APPLICATION': 'N/A',
+                'DATE FORWARDED IN TCDA': 'N/A', 
+                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
             }
         ];
 
 
-        // --- MODAL DIALOG LOGIC ---
+        // --- MODAL DIALOG LOGIC (same as before) ---
         function showMessage(title, message, type = 'error') {
             modalTitle.textContent = title;
             modalMessage.textContent = message;
@@ -247,68 +334,138 @@
         modal.addEventListener('click', (event) => {
             if (event.target === modal) hideModal();
         });
+        
+        /**
+         * Renders a single timeline step with a dot and details.
+         * @param {string} label - The descriptive title of the step.
+         * @param {string} dateText - The date or detail associated with the step.
+         * @param {boolean} isActive - True if this step is the current/most recent successful step.
+         * @param {boolean} isException - True if this step represents a warning or error state.
+         * @param {boolean} isLastActive - True if this is the final active step in the sequence.
+         */
+        function createTimelineStep(label, dateText, isActive, isException, isLastActive) {
+            const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
+            const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
+            const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
+            const dotClass = isException ? 'bg-orange-400 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
+            const lineClass = isException ? 'bg-orange-400' : (isActive ? 'bg-green-500' : 'bg-gray-300');
+            
+            // If it's the last active step (or an exception), the line should not be active/colored below the dot.
+            // This is handled by the main CSS and the active check.
+
+            // The exception dot/line styling takes precedence
+            const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
+            const lineStyle = isException ? 'bg-orange-400' : (isActive && !isLastActive ? 'bg-green-500' : 'bg-gray-300');
+
+            return `
+                <div class="${containerClass}">
+                    <div class="timeline-dot ${dotStyle}"></div>
+                    <div class="timeline-line ${lineStyle}"></div>
+                    <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
+                        <span class="${labelClass} text-sm mr-4">${label}</span>
+                        <span class="${dateClass} text-sm text-right whitespace-nowrap">${dateText}</span>
+                    </div>
+                </div>
+            `;
+        }
+
 
         /**
          * Creates and returns an HTML string for a single application result card.
          * @param {Object} data - The application data object.
-         * @param {number} index - The index of the result (for display purposes).
          */
-        function createResultCard(data, index) {
+        function createResultCard(data) {
             const statusText = data['STATUS'] || 'Unknown';
             // Sanitize status text for CSS class name
-            const statusClass = statusText.replace(/\s+/g, '');
+            const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '');
             // Display the FULL NAME
-            const fullName = data['FULL NAME'] ? `<h3 class="text-lg font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
+            const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
 
-            // Helper function to determine if a status step is active (has a date other than 'N/A')
+            // Helper function to check if a date field has a valid value
             const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
             
-            /**
-             * Helper function to create a timeline entry.
-             * Exception labels are always bold red, but their date is only bold red if active.
-             * Standard labels are blue, with a bold date if active, or gray if N/A.
-             */
-            const createTimelineEntry = (label, key, isException = false) => {
-                const isActive = isStatusActive(key);
+            // --- Timeline Steps Definition (Sequential Order is important) ---
+            const timelineEvents = [
+                { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
+                { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
+                { label: 'Forwarded to TCDA', key: 'DATE FORWARDED IN TCDA', isException: false },
+                { label: 'Forwarded to NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
+                { label: 'Application Process Completed', key: 'EFFECTIVITY DATE', isException: false, isFinal: true }
+            ];
 
-                // Determine classes for label and date
-                let labelClass = isException ? 'text-red-800 font-bold' : 'text-blue-700 font-medium';
-                let dateClass;
-                
-                if (isActive) {
-                    // Active Status: Bold date. RED if exception, strong GREY if standard.
-                    dateClass = isException ? 'text-red-800 font-semibold' : 'text-gray-800 font-semibold';
-                } else {
-                    // Inactive Status ('N/A'): Light gray date.
-                    dateClass = 'text-gray-500'; 
+            // --- Exception Steps (Exclusive - only one should be active at a time) ---
+            const exceptionEvents = [
+                { label: 'Returned with Discrepancy (ACTION REQUIRED)', key: 'RETURNED WITH DISCREPANCY', isException: true },
+                { label: 'Application On Hold (ACTION REQUIRED)', key: 'ON HOLD', isException: true },
+                { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
+            ];
+
+            let timelineHtml = '';
+            let activeException = null;
+            let lastActiveIndex = -1;
+
+            // 1. Check for Active Exception (highest priority visual status)
+            for (const event of exceptionEvents) {
+                if (isStatusActive(event.key)) {
+                    activeException = event;
+                    break;
                 }
+            }
 
+            // 2. Determine the last active sequential step if no exception is active
+            if (!activeException) {
+                for (let i = timelineEvents.length - 1; i >= 0; i--) {
+                    if (isStatusActive(timelineEvents[i].key)) {
+                        lastActiveIndex = i;
+                        break;
+                    }
+                }
+            }
 
-                return `
-                    <div class="flex justify-between">
-                        <span class="${labelClass}">${label}:</span>
-                        <span class="${dateClass}">${data[key] || 'N/A'}</span>
+            // 3. Render the timeline
+            if (activeException) {
+                // If exception is active, only show the initial received/review dates, and then the exception step
+                const preliminarySteps = timelineEvents.slice(0, 2); 
+                
+                // Render preliminary steps up to review date
+                preliminarySteps.forEach((event) => {
+                    const dateText = data[event.key] || 'N/A';
+                    const isActive = isStatusActive(event.key);
+                    // The line shouldn't be green/active below 'Date Review' if an exception follows
+                    const isLastActive = false; 
+                    if(isActive) {
+                        timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
+                    } else if (event.key === 'DATE RECEIVED') {
+                        // Always show received even if not active, or hide if no data
+                        if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
+                    }
+                });
+
+                // Render the exception step as the current/final step
+                const dateText = data[activeException.key];
+                timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
+                
+                // Add a concluding note
+                timelineHtml += `
+                    <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
+                        <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                     </div>
                 `;
-            };
 
-            // --- CONDITIONAL EXCEPTION RENDERING LOGIC ---
-            // Only show one of the three exception fields if it is active.
-            const isReturnedActive = isStatusActive('RETURNED WITH DISCREPANCY');
-            const isOnHoldActive = isStatusActive('ON HOLD');
-            const isPulledOutActive = isStatusActive('PULL-OUT OF APPLICATION');
-
-            let exceptionEntryHtml = '';
-
-            // Only render the single active exception
-            if (isReturnedActive) {
-                exceptionEntryHtml = createTimelineEntry('Returned with Discrepancy', 'RETURNED WITH DISCREPANCY', true);
-            } else if (isOnHoldActive) {
-                exceptionEntryHtml = createTimelineEntry('On Hold', 'ON HOLD', true);
-            } else if (isPulledOutActive) {
-                exceptionEntryHtml = createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true);
+            } else {
+                // Render the normal sequential flow
+                timelineEvents.forEach((event, index) => {
+                    const dateText = data[event.key] || 'N/A';
+                    const isActive = isStatusActive(event.key);
+                    const isCurrent = (index === lastActiveIndex);
+                    
+                    // Only render if there is data OR if it's the current/active step.
+                    // We render all steps that came before the last active one for continuity.
+                    if (isActive || index <= lastActiveIndex) {
+                        timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
+                    }
+                });
             }
-            // ---------------------------------------------
 
 
             return `
@@ -321,8 +478,8 @@
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium">Status:</span>
-                                <span><span class="status-pill status-${statusClass}">${statusText}</span></span>
+                                <span class="text-gray-600 font-medium">Current Status:</span>
+                                <span><span class="status-pill status-${statusClass}">${statusText.replace(/([A-Z])/g, ' $1').trim()}</span></span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium">Rank:</span>
@@ -334,19 +491,10 @@
                             </div>
                         </div>
                         
-                        <div class="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
-                            <h4 class="font-semibold text-blue-800 mb-2">Detailed Status Timeline</h4>
-                            <div class="space-y-2 text-sm">
-                                <!-- Standard Statuses (Always visible, Blue label) -->
-                                ${createTimelineEntry('Date Received', 'DATE RECEIVED')}
-                                ${createTimelineEntry('Date Review', 'DATE REVIEW')}
-                                
-                                <!-- Single Active Exception Status (Only one of the three will show, or none) -->
-                                ${exceptionEntryHtml}
-
-                                <!-- Final Forwarding Steps (Always visible, Blue label) -->
-                                ${createTimelineEntry('Date Forwarded (TCDA)', 'DATE FORWARDED IN TCDA')}
-                                ${createTimelineEntry('Date Forwarded (NAPOLCOM)', 'DATE FORWARDED IN NAPOLCOM')}
+                        <div class="bg-blue-50 p-4 rounded-lg mt-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-4">Application Progress Timeline</h4>
+                            <div class="relative pl-4 space-y-3">
+                                ${timelineHtml}
                             </div>
                         </div>
                     </div>
@@ -354,7 +502,7 @@
             `;
         }
 
-        // --- FORM HANDLING LOGIC ---
+        // --- FORM HANDLING LOGIC (Modified to include new mock data) ---
         searchForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             resultsArea.classList.add('hidden');
@@ -363,9 +511,8 @@
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
             const middleName = document.getElementById('middleNameInput').value.trim();
-            const birthday = document.getElementById('birthdayInput').value;
+            const birthday = document.getElementById('birthdayInput').value; // YYYY-MM-DD format
 
-            // Only run validation if not automatically submitting the form on load
             if (searchButton.disabled === false) { 
                 if (!lastName || !firstName || !birthday) {
                     showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
@@ -379,67 +526,48 @@
             searchButton.disabled = true;
 
             try {
-                // Since the form is no longer auto-submitted, we check if the user entered the mock data's details
-                if (lastName.toUpperCase() === 'DELA CRUZ' && 
-                    firstName.toUpperCase() === 'JUAN' &&
-                    (middleName.toUpperCase() === 'SANTOS' || middleName.trim() === '') && // Allow search without middle name
-                    birthday === '1985-05-20') { 
+                // Normalizing user inputs for case-insensitive checking against mock data
+                const userLastName = lastName.toUpperCase();
+                const userFirstName = firstName.toUpperCase();
+                const userBirthday = birthday; 
+                
+                console.log("User Input for Search:", { lastName, firstName, middleName, birthday });
+                console.log("To see MOCK DATA 1 (Completed), enter: DELA CRUZ, JUAN, 1985-05-20");
+                console.log("To see MOCK DATA 2 (On Hold), enter: DELA ROSA, MARIA, 1990-12-01");
+                console.log("To see MOCK DATA 3 (In Review), enter: REYES, RICARDO, 1970-11-25");
+                console.log("To see MOCK DATA 4 (Returned), enter: DIAZ, RAMON, 1970-01-01");
 
+
+                let foundMockData = null;
+
+                // Check for Mock User 1 (Juan Dela Cruz)
+                if (userLastName === 'DELA CRUZ' && userFirstName === 'JUAN' && userBirthday === '1985-05-20') { 
+                    foundMockData = MOCK_RESULTS[0];
+                } 
+                // Check for Mock User 2 (Maria Dela Rosa)
+                else if (userLastName === 'DELA ROSA' && userFirstName === 'MARIA' && userBirthday === '1990-12-01') {
+                    foundMockData = MOCK_RESULTS[1];
+                }
+                // Check for Mock User 3 (Ricardo S. Reyes)
+                else if (userLastName === 'REYES' && userFirstName === 'RICARDO' && userBirthday === '1970-11-25') {
+                    foundMockData = MOCK_RESULTS[2];
+                }
+                // Check for Mock User 4 (Ramon Diaz) - NEW
+                else if (userLastName === 'DIAZ' && userFirstName === 'RAMON' && userBirthday === '1970-01-01') {
+                    foundMockData = MOCK_RESULTS[3];
+                }
+
+                if (foundMockData) {
                     // --- MOCK DATA SIMULATION ---
-                    const latestResult = [MOCK_RESULTS[0]]; 
-                    const mockMessage = "Showing mock data for demonstration. Status is: Completed."; 
+                    const latestResult = [foundMockData]; 
+                    const statusName = foundMockData['STATUS'].replace(/([A-Z])/g, ' $1').trim();
+                    const mockMessage = `Showing mock data for demonstration. Latest status: ${statusName}.`;
                         
                     displayResults(latestResult, mockMessage);
                 } 
-                // Original external API logic (commented out for sample display)
-                /*
-                else if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
-                     throw new Error('Please update the GAS_WEB_APP_URL constant in the script with your actual Google Apps Script URL.');
-                }
-                */
                 else {
                     // Show a simulated "not found" if the user didn't enter the mock data
                     showMessage('Application Not Found', 'No matching applications were found for the provided details. (Simulated API response)', 'info');
-                    
-                    /* Original API logic:
-                    const url = new URL(GAS_WEB_APP_URL);
-                    url.searchParams.append('ln', lastName);
-                    url.searchParams.append('fn', firstName);
-                    url.searchParams.append('mn', middleName);
-                    url.searchParams.append('bd', birthday);
-
-                    console.log('Making request to:', url.toString());
-                    
-                    // Implement exponential backoff for API calls
-                    let response = null;
-                    const maxRetries = 3;
-                    let delay = 1000;
-
-                    for (let i = 0; i < maxRetries; i++) {
-                        try {
-                            response = await fetch(url);
-                            if (response.status !== 429) break; // Break if not rate limiting
-                        } catch (err) {
-                            console.error("Fetch attempt failed:", err);
-                            if (i === maxRetries - 1) throw err;
-                        }
-                        await new Promise(resolve => setTimeout(resolve, delay));
-                        delay *= 2;
-                    }
-                    
-                    if (!response.ok) {
-                        throw new Error(`The server responded with status: ${response.status}. Please try again later.`);
-                    }
-
-                    const result = await response.json();
-                    console.log('Response received:', result);
-
-                    if (result.status === 'success' && result.data && result.data.length > 0) {
-                        displayResults(result.data, result.message);
-                    } else {
-                        showMessage('Application Not Found', result.message || 'No matching applications were found for the provided details.', 'info');
-                    }
-                    */
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -458,23 +586,21 @@
 
         /**
          * Clears previous results and displays new results in the DOM.
-         * @param {Array<Object>} results - Array of application objects (expected to be length 1 now).
+         * @param {Array<Object>} results - Array of application objects.
          * @param {string} message - Message to display below the results.
          */
         function displayResults(results, message) {
             resultsContainer.innerHTML = '';
-            results.forEach((data, index) => {
-                const cardHtml = createResultCard(data, index);
+            results.forEach((data) => {
+                const cardHtml = createResultCard(data);
                 resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
             });
             
-            // Update the header to reflect the single-result focus
             resultsHeader.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>Latest Application Status`;
 
             matchMessage.textContent = message;
-            // Only show the message box if there is actually a message
             if (message.trim() === "") {
                 matchMessage.classList.add('hidden');
             } else {
@@ -493,7 +619,6 @@
 
         // --- PAGE INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Set focus to the first input when the page loads, leaving fields blank.
             document.getElementById('lastNameInput').focus();
         });
     </script>
