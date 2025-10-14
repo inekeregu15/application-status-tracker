@@ -214,9 +214,9 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyje2p5j8jLeJsA4DRtmf2zT4L0uQ6mPlNzLMWJSWYTUypAP_zEUeuLPyZvsw8NbEVi/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLqst5zSrPlmjcJDo24xF441VcX5guQFcskQBEA7aVIWhpFdZUDLrxudBeGzVROvtQ/exec";
 
-        // --- DOM ELEMENT REFERENCES (same as before) ---
+        // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
         const searchButton = document.getElementById('searchButton');
         const clearButton = document.getElementById('clearButton');
@@ -232,72 +232,7 @@
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
 
-        // --- MOCK DATA (UPDATED) ---
-        // Note: Full names and birthdays are mocked for testing the search functionality.
-        const MOCK_RESULTS = [{
-                // Profile 1: Juan Dela Cruz (Completed Status - Both forwarding dates active)
-                'FULL NAME': 'DELA CRUZ, Juan Santos', 
-                'RANK': 'Police Major', 
-                'UNIT/REGION': 'PRO-NCRPO', 
-                'STATUS': 'Completed', 
-                'EFFECTIVITY DATE': 'October 15, 2025', 
-                'DATE RECEIVED': 'October 2, 2025', 
-                'DATE REVIEW': 'October 3, 2025', 
-                'RETURNED WITH DISCREPANCY': 'N/A', 
-                'ON HOLD': 'N/A', 
-                'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'October 12, 2025', 
-                'DATE FORWARDED IN NAPOLCOM': 'October 14, 2025' 
-            },
-            {
-                // Profile 2: Maria Dela Rosa (On Hold Status - Exception active)
-                'FULL NAME': 'DELA ROSA, Maria S.', 
-                'RANK': 'Police Officer I', 
-                'UNIT/REGION': 'PRO-4A', 
-                'STATUS': 'OnHold', 
-                'EFFECTIVITY DATE': 'June 1, 2026', 
-                'DATE RECEIVED': 'January 10, 2026', 
-                'DATE REVIEW': 'February 5, 2026', 
-                'RETURNED WITH DISCREPANCY': 'N/A', 
-                'ON HOLD': 'March 1, 2026 (Missing Clearance document)', 
-                'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'N/A', 
-                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
-            },
-            {
-                // Profile 3: Ricardo S. Reyes (In Review Status - No forwarding dates, no exceptions)
-                'FULL NAME': 'REYES, Ricardo S.', 
-                'RANK': 'Police Colonel', 
-                'UNIT/REGION': 'PRO-3', 
-                'STATUS': 'InReview', 
-                'EFFECTIVITY DATE': 'May 10, 2027', 
-                'DATE RECEIVED': 'March 1, 2027', 
-                'DATE REVIEW': 'March 15, 2027', 
-                'RETURNED WITH DISCREPANCY': 'N/A', 
-                'ON HOLD': 'N/A', 
-                'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'N/A', 
-                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
-            },
-            {
-                // Profile 4: Ramon Diaz (Returned with Discrepancy Status - NEW)
-                'FULL NAME': 'DIAZ, Ramon F.', 
-                'RANK': 'Police Lieutenant Colonel', 
-                'UNIT/REGION': 'Camp Crame', 
-                'STATUS': 'ReturnedwithDiscrepancy', 
-                'EFFECTIVITY DATE': 'January 1, 2028', 
-                'DATE RECEIVED': 'October 1, 2027', 
-                'DATE REVIEW': 'October 20, 2027', 
-                'RETURNED WITH DISCREPANCY': 'October 25, 2027 (Missing last 3 months pay slips)', 
-                'ON HOLD': 'N/A', 
-                'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'N/A', 
-                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
-            }
-        ];
-
-
-        // --- MODAL DIALOG LOGIC (same as before) ---
+        // --- MODAL DIALOG LOGIC ---
         function showMessage(title, message, type = 'error') {
             modalTitle.textContent = title;
             modalMessage.textContent = message;
@@ -368,7 +303,6 @@
                 </div>
             `;
         }
-
 
         /**
          * Creates and returns an HTML string for a single application result card.
@@ -467,7 +401,6 @@
                 });
             }
 
-
             return `
                 <div class="bg-white p-6 rounded-xl border-t-4 border-blue-600 shadow-md">
                     ${fullName}
@@ -502,7 +435,7 @@
             `;
         }
 
-        // --- FORM HANDLING LOGIC (Modified to include new mock data) ---
+        // --- FORM HANDLING LOGIC (Now connects to real backend) ---
         searchForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             resultsArea.classList.add('hidden');
@@ -513,11 +446,9 @@
             const middleName = document.getElementById('middleNameInput').value.trim();
             const birthday = document.getElementById('birthdayInput').value; // YYYY-MM-DD format
 
-            if (searchButton.disabled === false) { 
-                if (!lastName || !firstName || !birthday) {
-                    showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
-                    return;
-                }
+            if (!lastName || !firstName || !birthday) {
+                showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
+                return;
             }
             
             // Set loading state
@@ -526,49 +457,28 @@
             searchButton.disabled = true;
 
             try {
-                // Normalizing user inputs for case-insensitive checking against mock data
-                const userLastName = lastName.toUpperCase();
-                const userFirstName = firstName.toUpperCase();
-                const userBirthday = birthday; 
+                // Build query parameters for Google Apps Script
+                const params = new URLSearchParams({
+                    ln: lastName,
+                    fn: firstName,
+                    bd: birthday,
+                    mn: middleName
+                });
+
+                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
                 
-                console.log("User Input for Search:", { lastName, firstName, middleName, birthday });
-                console.log("To see MOCK DATA 1 (Completed), enter: DELA CRUZ, JUAN, 1985-05-20");
-                console.log("To see MOCK DATA 2 (On Hold), enter: DELA ROSA, MARIA, 1990-12-01");
-                console.log("To see MOCK DATA 3 (In Review), enter: REYES, RICARDO, 1970-11-25");
-                console.log("To see MOCK DATA 4 (Returned), enter: DIAZ, RAMON, 1970-01-01");
-
-
-                let foundMockData = null;
-
-                // Check for Mock User 1 (Juan Dela Cruz)
-                if (userLastName === 'DELA CRUZ' && userFirstName === 'JUAN' && userBirthday === '1985-05-20') { 
-                    foundMockData = MOCK_RESULTS[0];
-                } 
-                // Check for Mock User 2 (Maria Dela Rosa)
-                else if (userLastName === 'DELA ROSA' && userFirstName === 'MARIA' && userBirthday === '1990-12-01') {
-                    foundMockData = MOCK_RESULTS[1];
-                }
-                // Check for Mock User 3 (Ricardo S. Reyes)
-                else if (userLastName === 'REYES' && userFirstName === 'RICARDO' && userBirthday === '1970-11-25') {
-                    foundMockData = MOCK_RESULTS[2];
-                }
-                // Check for Mock User 4 (Ramon Diaz) - NEW
-                else if (userLastName === 'DIAZ' && userFirstName === 'RAMON' && userBirthday === '1970-01-01') {
-                    foundMockData = MOCK_RESULTS[3];
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                if (foundMockData) {
-                    // --- MOCK DATA SIMULATION ---
-                    const latestResult = [foundMockData]; 
-                    const statusName = foundMockData['STATUS'].replace(/([A-Z])/g, ' $1').trim();
-                    const mockMessage = `Showing mock data for demonstration. Latest status: ${statusName}.`;
-                        
-                    displayResults(latestResult, mockMessage);
-                } 
-                else {
-                    // Show a simulated "not found" if the user didn't enter the mock data
-                    showMessage('Application Not Found', 'No matching applications were found for the provided details. (Simulated API response)', 'info');
+                const result = await response.json();
+                
+                if (result.status === 'success') {
+                    displayResults(result.data, result.message);
+                } else {
+                    showMessage('Search Result', result.message, 'info');
                 }
+                
             } catch (error) {
                 console.error('Error:', error);
                 if (error.message.includes('GAS_WEB_APP_URL')) {
@@ -620,6 +530,10 @@
         // --- PAGE INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('lastNameInput').focus();
+            
+            // Set max date for birthday to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('birthdayInput').max = today;
         });
     </script>
 </body>
