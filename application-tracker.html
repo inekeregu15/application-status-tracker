@@ -147,7 +147,7 @@
         <!-- Footer -->
         <div class="text-center text-xs text-gray-400 mt-8 border-t pt-4">
             <p>PNP Retirement and Benefits Administration Service (PRBS)</p>
-            <p>For inquiries, please contact your respective regional office.</p>
+            <!-- Removed: <p>For inquiries, please contact your respective regional office.</p> -->
         </div>
     </div>
 
@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2VIPDaNJwxMiXkL0GqrzdwrvZeh_gH54R7B6mVgbNPVhTLJbpxtWHiSzP2JgE0B5U/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx3Osz9r2e34jZC-JEOM7km1YOErwLLgYl-4-X1BoSchNAHj7iBH6yT6GxgKxicx4_l/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -197,15 +197,13 @@
                 'FULL NAME': 'DELA CRUZ, Juan Santos (Sample Application)', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
-                'STATUS': 'Returned with Discrepancy', // Current status for demonstration
+                'STATUS': 'On Hold', // Current status for demonstration
                 'EFFECTIVITY DATE': 'October 16, 2026', 
                 'DATE RECEIVED': 'October 2, 2025', 
                 'DATE REVIEW': 'October 3, 2025', 
-                // Active exception (Visible with Bold Red label/Bold Red date)
-                'RETURNED WITH DISCREPANCY': 'October 5, 2025', 
-                // Inactive exception (Visible with Bold Red label/Gray N/A date)
-                'ON HOLD': 'N/A', 
-                // Inactive exception (Visible with Bold Red label/Gray N/A date)
+                // Inactive exceptions
+                'RETURNED WITH DISCREPANCY': 'N/A', 
+                'ON HOLD': 'October 6, 2025', // This one is active
                 'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'N/A', 
                 'DATE FORWARDED IN NAPOLCOM': 'N/A' 
@@ -274,7 +272,6 @@
                 const isActive = isStatusActive(key);
 
                 // Determine classes for label and date
-                // Exception labels are always BOLD RED (text-red-800 font-bold)
                 let labelClass = isException ? 'text-red-800 font-bold' : 'text-blue-700 font-medium';
                 let dateClass;
                 
@@ -294,6 +291,25 @@
                     </div>
                 `;
             };
+
+            // --- CONDITIONAL EXCEPTION RENDERING LOGIC ---
+            const isReturnedActive = isStatusActive('RETURNED WITH DISCREPANCY');
+            const isOnHoldActive = isStatusActive('ON HOLD');
+            const isPulledOutActive = isStatusActive('PULL-OUT OF APPLICATION');
+
+            let exceptionEntryHtml = '';
+
+            // Only render the single active exception
+            if (isReturnedActive) {
+                exceptionEntryHtml = createTimelineEntry('Returned with Discrepancy', 'RETURNED WITH DISCREPANCY', true);
+            } else if (isOnHoldActive) {
+                exceptionEntryHtml = createTimelineEntry('On Hold', 'ON HOLD', true);
+            } else if (isPulledOutActive) {
+                exceptionEntryHtml = createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true);
+            }
+            // If none are active, exceptionEntryHtml remains empty, and nothing is rendered.
+            // ---------------------------------------------
+
 
             return `
                 <div class="bg-white p-6 rounded-xl border-t-4 border-blue-600 shadow-md">
@@ -325,10 +341,8 @@
                                 ${createTimelineEntry('Date Received', 'DATE RECEIVED')}
                                 ${createTimelineEntry('Date Review', 'DATE REVIEW')}
                                 
-                                <!-- Exception Statuses (Always visible, Red label confirmed to match requested text) -->
-                                ${createTimelineEntry('Returned with Discrepancy', 'RETURNED WITH DISCREPANCY', true)}
-                                ${createTimelineEntry('On Hold', 'ON HOLD', true)}
-                                ${createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true)}
+                                <!-- Single Active Exception Status (Only one of the three will show, or none) -->
+                                ${exceptionEntryHtml}
 
                                 <!-- Final Forwarding Steps (Always visible, Blue label) -->
                                 ${createTimelineEntry('Date Forwarded (TCDA)', 'DATE FORWARDED IN TCDA')}
@@ -369,7 +383,8 @@
                 if (true) { // Always run mock data for demonstration
                     // --- MOCK DATA SIMULATION ---
                     const latestResult = [MOCK_RESULTS[0]]; 
-                    const mockMessage = "Simulated search result using mock data. Note the **bold red** date for 'Returned with Discrepancy', and the red labels for all exception types.";
+                    // Mock message removed as requested
+                    const mockMessage = ""; 
                         
                     displayResults(latestResult, mockMessage);
                     // We don't return here so the finally block can reset the button state
@@ -452,7 +467,12 @@
                 </svg>Latest Application Status`;
 
             matchMessage.textContent = message;
-            matchMessage.classList.remove('hidden');
+            // Only show the message box if there is actually a message
+            if (message.trim() === "") {
+                matchMessage.classList.add('hidden');
+            } else {
+                matchMessage.classList.remove('hidden');
+            }
             resultsArea.classList.remove('hidden');
         }
 
