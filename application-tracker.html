@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwkCuTf4nRyEGoaywH2uQQvr3nS2wGkfvkWnJxwUnVSZSs-kcChFUYZe4S-IC1_VGVw/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz2VIPDaNJwxMiXkL0GqrzdwrvZeh_gH54R7B6mVgbNPVhTLJbpxtWHiSzP2JgE0B5U/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -197,15 +197,15 @@
                 'FULL NAME': 'DELA CRUZ, Juan Santos (Sample Application)', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
-                'STATUS': 'On Hold', // Current status set to 'On Hold' for demonstration
+                'STATUS': 'Returned with Discrepancy', // Current status for demonstration
                 'EFFECTIVITY DATE': 'October 16, 2026', 
                 'DATE RECEIVED': 'October 2, 2025', 
                 'DATE REVIEW': 'October 3, 2025', 
-                // Inactive exception (Now visible with Red label/Gray N/A date)
-                'RETURNED WITH DISCREPANCY': 'N/A', 
                 // Active exception (Visible with Bold Red label/Bold Red date)
-                'ON HOLD': 'October 6, 2025', 
-                // Inactive exception (Now visible with Red label/Gray N/A date)
+                'RETURNED WITH DISCREPANCY': 'October 5, 2025', 
+                // Inactive exception (Visible with Bold Red label/Gray N/A date)
+                'ON HOLD': 'N/A', 
+                // Inactive exception (Visible with Bold Red label/Gray N/A date)
                 'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'N/A', 
                 'DATE FORWARDED IN NAPOLCOM': 'N/A' 
@@ -274,21 +274,16 @@
                 const isActive = isStatusActive(key);
 
                 // Determine classes for label and date
+                // Exception labels are always BOLD RED (text-red-800 font-bold)
                 let labelClass = isException ? 'text-red-800 font-bold' : 'text-blue-700 font-medium';
                 let dateClass;
                 
                 if (isActive) {
-                    // Active Status (Standard or Exception)
+                    // Active Status: Bold date. RED if exception, strong GREY if standard.
                     dateClass = isException ? 'text-red-800 font-semibold' : 'text-gray-800 font-semibold';
                 } else {
-                    // Inactive Status ('N/A')
-                    if (isException) {
-                        // Inactive Exception: Red label, but light gray N/A date
-                        dateClass = 'text-gray-500'; 
-                    } else {
-                        // Inactive Standard: Blue label, light gray N/A date
-                        dateClass = 'text-gray-500'; 
-                    }
+                    // Inactive Status ('N/A'): Light gray date.
+                    dateClass = 'text-gray-500'; 
                 }
 
 
@@ -330,7 +325,7 @@
                                 ${createTimelineEntry('Date Received', 'DATE RECEIVED')}
                                 ${createTimelineEntry('Date Review', 'DATE REVIEW')}
                                 
-                                <!-- Exception Statuses (Always visible, Red label) -->
+                                <!-- Exception Statuses (Always visible, Red label confirmed to match requested text) -->
                                 ${createTimelineEntry('Returned with Discrepancy', 'RETURNED WITH DISCREPANCY', true)}
                                 ${createTimelineEntry('On Hold', 'ON HOLD', true)}
                                 ${createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true)}
@@ -374,7 +369,7 @@
                 if (true) { // Always run mock data for demonstration
                     // --- MOCK DATA SIMULATION ---
                     const latestResult = [MOCK_RESULTS[0]]; 
-                    const mockMessage = "Simulated search result using mock data. Note the **red text** for 'On Hold' and visible, red-labeled inactive exceptions.";
+                    const mockMessage = "Simulated search result using mock data. Note the **bold red** date for 'Returned with Discrepancy', and the red labels for all exception types.";
                         
                     displayResults(latestResult, mockMessage);
                     // We don't return here so the finally block can reset the button state
