@@ -3,21 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Application Status Tracker</title>
+    <title>Optional Application Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://rsms.me/">
+    <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <style>
+        :root { font-family: 'Inter', sans-serif; }
+        @supports (font-variation-settings: normal) {
+            :root { font-family: 'Inter var', sans-serif; }
+        }
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f4f7f9 0%, #e8edf2 100%);
-            min-height: 100vh;
+            background-color: #f0f4f8;
         }
         .card {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
         .status-pill {
             display: inline-flex;
@@ -26,6 +26,7 @@
             border-radius: 9999px;
             font-weight: 600;
             font-size: 0.875rem;
+            white-space: nowrap;
         }
         .status-Submitted { background-color: #bfdbfe; color: #1e40af; }
         .status-InReview { background-color: #fde68a; color: #b45309; }
@@ -35,252 +36,410 @@
         .status-OnHold { background-color: #f3e8ff; color: #7e22ce; }
         .status-Returned { background-color: #fef3c7; color: #d97706; }
         .hidden { display: none !important; }
+
+        /* Modal animation */
+        #messageModal {
+            transition: opacity 0.3s ease;
+        }
+        #messageModal > div {
+            transition: transform 0.3s ease;
+        }
+        
+        /* Focus styles for accessibility */
+        input:focus, button:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
+    <!-- Main Application Card -->
     <div id="app" class="w-full max-w-2xl bg-white rounded-xl card p-6 md:p-8">
         <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 border-2 border-blue-200">
-                <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-12 w-12">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-transparent rounded-full mb-4">
+                <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-16 w-16 object-contain" onerror="this.style.display='none'">
             </div>
-            <h1 class="text-3xl font-extrabold text-gray-900 mb-2">
-                Application Status Tracker
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
+                Optional Application Tracker
             </h1>
-            <p class="text-center text-gray-500">
-                Check the status of your retirement application folder
+            <p class="text-center text-gray-500 mt-1">
+                Check the status of your retirement application folder.
             </p>
         </div>
 
         <!-- Search Form Card -->
-        <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-lg border border-gray-200 mb-6">
+        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-                Search Application Status
+                Find Application
             </h2>
             <form id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="input-group">
+                    <div>
                         <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
-                            <span>Last Name</span>
-                            <span class="text-red-500 ml-1">*</span>
+                            <span>Last Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
                         <input type="text" id="lastNameInput" required 
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
-                               placeholder="Enter last name">
+                               placeholder="e.g., Dela Cruz"
+                               aria-describedby="lastNameHelp">
+                        <div id="lastNameHelp" class="sr-only">Enter your last name as it appears on official documents</div>
                     </div>
-                    <div class="input-group">
+                    <div>
                         <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
-                            <span>First Name</span>
-                            <span class="text-red-500 ml-1">*</span>
+                            <span>First Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
                         <input type="text" id="firstNameInput" required 
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
-                               placeholder="Enter first name">
+                               placeholder="e.g., Juan"
+                               aria-describedby="firstNameHelp">
+                        <div id="firstNameHelp" class="sr-only">Enter your first name as it appears on official documents</div>
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div class="input-group">
+                    <div>
                         <label for="middleNameInput" class="text-sm font-semibold text-gray-700 mb-1">Middle Name</label>
                         <input type="text" id="middleNameInput" 
                                class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
-                               placeholder="Enter middle name">
+                               placeholder="e.g., Santos (Optional)">
                     </div>
-                    <div class="input-group">
+                    <div>
                         <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
-                            <span>Birthday</span>
-                            <span class="text-red-500 ml-1">*</span>
+                            <span>Birthday</span><span class="text-red-500 ml-1">*</span>
                         </label>
                         <input type="date" id="birthdayInput" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+                               aria-describedby="birthdayHelp">
+                        <div id="birthdayHelp" class="sr-only">Enter your date of birth in YYYY-MM-DD format</div>
                     </div>
                 </div>
-
-                <!-- Date Format Help -->
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-                    <div class="flex items-start">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500 mr-2 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                    <button type="submit" id="searchButton" 
+                            class="w-full flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
+                        <span id="buttonText">Search</span>
+                        <svg id="loadingSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <div>
-                            <p class="text-sm font-medium text-blue-800">Date Format Help</p>
-                            <p class="text-xs text-blue-600">
-                                Use the date picker or enter as <strong>YYYY-MM-DD</strong> (e.g., 1982-01-22 for January 22, 1982)
-                            </p>
-                        </div>
-                    </div>
+                    </button>
+                    <button type="button" id="clearButton" 
+                            class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200">
+                        Clear
+                    </button>
                 </div>
-                
-                <button type="submit" id="searchButton" 
-                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
-                    <span id="buttonText">Search Application Status</span>
-                    <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </button>
             </form>
         </div>
 
-        <!-- Enhanced Status Result Card -->
-        <div id="resultCard" class="bg-white p-6 rounded-lg border border-gray-300 hidden">
+        <!-- Status Result Card -->
+        <div id="resultCard" class="bg-white p-6 rounded-lg border border-gray-200 hidden">
             <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 Application Details
             </h2>
-            
             <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Folder Title:</span>
-                        <span id="folderTitleResult" class="text-gray-900 font-semibold text-right"></span>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Full Name:</span>
+                        <span id="fullNameResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
                     </div>
-                    <div class="flex justify-between items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Status:</span>
-                        <span id="statusResult" class="text-gray-900 font-semibold"></span>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="flex justify-between items-center border-b pb-2">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                         <span class="text-gray-600 font-medium">Rank:</span>
-                        <span id="rankResult" class="text-gray-900 font-semibold text-right"></span>
+                        <span id="rankResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
                     </div>
-                    <div class="flex justify-between items-center border-b pb-2">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Effectivity Date:</span>
+                        <span id="effectivityDateResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Status:</span>
+                        <span id="statusResult" class="text-left sm:text-right">-</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                         <span class="text-gray-600 font-medium">Unit/Region:</span>
-                        <span id="unitResult" class="text-gray-900 font-semibold text-right"></span>
+                        <span id="unitResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium">Reason to Retire:</span>
+                        <span id="reasonResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
                     </div>
                 </div>
-                
-                <div class="bg-yellow-50 p-3 rounded-lg mt-4">
-                    <h3 class="font-semibold text-yellow-800 mb-2">Additional Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-                        <div><span class="text-yellow-700">Length of Service:</span> <span id="serviceLengthResult">N/A</span></div>
-                        <div><span class="text-yellow-700">Date Received:</span> <span id="receivedDateResult">N/A</span></div>
-                        <div><span class="text-yellow-700">Birthday in records:</span> <span id="birthdayResult">N/A</span></div>
+                <div class="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
+                    <h3 class="font-semibold text-blue-800 mb-2">Application Timeline</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-blue-700 font-medium">Date Received:</span>
+                            <span id="receivedDateResult" class="text-gray-800">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-700 font-medium">Date Review:</span>
+                            <span id="reviewDateResult" class="text-gray-800">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-700 font-medium">Forwarded to TCDA:</span>
+                            <span id="tcdaDateResult" class="text-gray-800">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-blue-700 font-medium">Forwarded to NAPOLCOM:</span>
+                            <span id="napolcomDateResult" class="text-gray-800">-</span>
+                        </div>
                     </div>
+                </div>
+                <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                    <h3 class="font-semibold text-yellow-800 mb-2">Remarks</h3>
+                    <p id="remarksResult" class="text-sm text-gray-700">-</p>
                 </div>
             </div>
-            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 rounded-lg"></p>
+            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg"></p>
         </div>
 
-        <!-- Instructions Card -->
-        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mt-6">
-            <h3 class="font-semibold text-green-800 mb-2 flex items-center">
+        <!-- How-to-Search Card -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
+            <h3 class="font-semibold text-blue-800 mb-2 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Ready to Search
+                How to Search
             </h3>
-            <p class="text-sm text-green-700">
-                Your application is now configured to work with the date format in your Google Sheet (DD-MMM-YYYY). 
-                The system will automatically convert dates for you.
+            <p class="text-sm text-blue-700">
+                To check your application status, please enter your details in the form above. Fields marked with <span class="text-red-500 font-bold">*</span> are required.
             </p>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-xs text-gray-400 mt-8 border-t pt-4">
+            <p>PNP Retirement and Benefits Administration Service (PRBS)</p>
+            <p>For inquiries, please contact your respective regional office.</p>
         </div>
     </div>
 
+    <!-- Modal for displaying messages -->
+    <div id="messageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50 p-4">
+        <div class="relative mx-auto p-5 border w-full max-w-sm shadow-lg rounded-xl bg-white scale-95 transform">
+            <div class="mt-3 text-center">
+                <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <!-- Icon will be inserted here by JS -->
+                </div>
+                <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900 mt-4"></h3>
+                <div class="mt-2 px-2 py-3">
+                    <p id="modalMessage" class="text-sm text-gray-500 whitespace-pre-wrap"></p>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading status for screen readers -->
+    <div id="loadingStatus" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
     <script>
-        // UPDATE THIS URL WITH YOUR ACTUAL GAS WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyX13NsDaSPvWlD3DFqSXR1GmlpPqC0qKHMr6nny59RVeBiVpxfjkzpcfqVqioqBx1s/exec";
-        
-        document.getElementById('searchForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
+        // --- CONFIGURATION ---
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbziqiprvMlXn3xaIs24w7bi0Pa-enjffTNFOWXorJUWLG4N25SaPK1JsqW59dCawEtT/exec";
+
+        // --- DOM ELEMENT REFERENCES ---
+        const searchForm = document.getElementById('searchForm');
+        const searchButton = document.getElementById('searchButton');
+        const clearButton = document.getElementById('clearButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const buttonText = document.getElementById('buttonText');
+        const resultCard = document.getElementById('resultCard');
+        const modal = document.getElementById('messageModal');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalMessage = document.getElementById('modalMessage');
+        const loadingStatus = document.getElementById('loadingStatus');
+
+        // --- MODAL DIALOG LOGIC ---
+        function showMessage(title, message, type = 'error') {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            modalIcon.innerHTML = '';
+            let iconClass = '';
+            let iconSvg = '';
+
+            switch (type) {
+                case 'success':
+                    iconClass = 'bg-green-100';
+                    iconSvg = `<svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+                    break;
+                case 'info':
+                    iconClass = 'bg-blue-100';
+                    iconSvg = `<svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                    break;
+                default:
+                    iconClass = 'bg-red-100';
+                    iconSvg = `<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+            }
+
+            modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
+            modalIcon.innerHTML = iconSvg;
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+        }
+
+        function hideModal() {
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        closeModalButton.addEventListener('click', hideModal);
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) hideModal();
+        });
+
+        // --- INPUT VALIDATION ---
+        function validateInputs(firstName, lastName, birthday) {
+            const errors = [];
+            const nameRegex = /^[a-zA-Z\s\-\.']+$/;
             
+            if (!nameRegex.test(firstName)) {
+                errors.push('First name contains invalid characters. Only letters, spaces, hyphens, and apostrophes are allowed.');
+            }
+            
+            if (!nameRegex.test(lastName)) {
+                errors.push('Last name contains invalid characters. Only letters, spaces, hyphens, and apostrophes are allowed.');
+            }
+            
+            const birthDate = new Date(birthday);
+            const today = new Date();
+            if (birthDate >= today) {
+                errors.push('Birthday must be in the past.');
+            }
+            
+            if (birthDate.getFullYear() < 1900) {
+                errors.push('Please enter a valid birth year.');
+            }
+            
+            return errors;
+        }
+
+        // --- FORM HANDLING LOGIC ---
+        searchForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            resultCard.classList.add('hidden');
+
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
+            const middleName = document.getElementById('middleNameInput').value.trim();
             const birthday = document.getElementById('birthdayInput').value;
 
             if (!lastName || !firstName || !birthday) {
-                alert('Please fill in all required fields: Last Name, First Name, and Birthday.');
+                showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
                 return;
             }
 
-            const button = document.getElementById('searchButton');
-            const spinner = document.getElementById('loadingSpinner');
-            const buttonText = document.getElementById('buttonText');
-            
-            button.disabled = true;
-            spinner.classList.remove('hidden');
+            const validationErrors = validateInputs(firstName, lastName, birthday);
+            if (validationErrors.length > 0) {
+                showMessage('Invalid Input', validationErrors.join('\n'), 'error');
+                return;
+            }
+
             buttonText.textContent = 'Searching...';
+            loadingSpinner.classList.remove('hidden');
+            searchButton.disabled = true;
+            loadingStatus.textContent = 'Searching for application, please wait...';
 
             try {
-                // Test if GAS URL is set
-                if (GAS_WEB_APP_URL.includes('YOUR_SCRIPT_ID')) {
-                    throw new Error('Please update the GAS_WEB_APP_URL with your actual Google Apps Script URL');
+                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_DEPLOYED_WEB_APP_URL_HERE")) {
+                    throw new Error('Application not configured. Please contact system administrator.');
                 }
 
-                const url = `${GAS_WEB_APP_URL}?ln=${encodeURIComponent(lastName)}&fn=${encodeURIComponent(firstName)}&bd=${encodeURIComponent(birthday)}`;
-                console.log('Making request to:', url);
-                
-                const response = await fetch(url);
-                
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+
+                const url = new URL(GAS_WEB_APP_URL);
+                url.searchParams.append('ln', lastName);
+                url.searchParams.append('fn', firstName);
+                url.searchParams.append('mn', middleName);
+                url.searchParams.append('bd', birthday);
+
+                console.log('Making request to:', url.toString());
+                const response = await fetch(url, { signal: controller.signal });
+                clearTimeout(timeoutId);
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`The server responded with status: ${response.status}. Please try again later.`);
                 }
-                
+
                 const result = await response.json();
                 console.log('Response received:', result);
 
                 if (result.status === 'success') {
                     const data = result.data;
                     
-                    // Display main information
-                    document.getElementById('folderTitleResult').textContent = data['FOLDER_TITLE'] || 'N/A';
+                    // Update the display with the retrieved data
+                    document.getElementById('fullNameResult').textContent = data['FULLNAME'] || 'N/A';
+                    document.getElementById('rankResult').textContent = data['RANK'] || 'N/A';
+                    document.getElementById('effectivityDateResult').textContent = data['EFFECTIVITY DATE'] || 'N/A';
+                    document.getElementById('unitResult').textContent = data['UNIT/REGION'] || 'N/A';
+                    document.getElementById('reasonResult').textContent = data['REASON TO RETIRE'] || 'N/A';
+                    document.getElementById('remarksResult').textContent = data['REMARKS'] || 'N/A';
                     
-                    // Create status pill
                     const statusResult = document.getElementById('statusResult');
                     statusResult.innerHTML = '';
                     const statusPill = document.createElement('span');
-                    const statusText = data['STATUS'] || 'N/A';
+                    const statusText = data['STATUS'] || 'Unknown';
                     statusPill.textContent = statusText;
                     statusPill.className = `status-pill status-${statusText.replace(/\s+/g, '')}`;
                     statusResult.appendChild(statusPill);
                     
-                    // Display additional information
-                    document.getElementById('rankResult').textContent = data['RANK'] || 'N/A';
-                    document.getElementById('unitResult').textContent = data['UNIT/REGION'] || 'N/A';
-                    document.getElementById('serviceLengthResult').textContent = data['COMPUTED LENGTH OF SERVICE'] || 'N/A';
                     document.getElementById('receivedDateResult').textContent = data['RECEIVED'] || 'N/A';
-                    document.getElementById('birthdayResult').textContent = data['BIRTHDAY'] || 'N/A';
+                    document.getElementById('reviewDateResult').textContent = data['DATE REVIEW'] || 'N/A';
+                    document.getElementById('tcdaDateResult').textContent = data['FORWARDED TO TDCA'] || 'N/A';
+                    document.getElementById('napolcomDateResult').textContent = data['FORWARDED TO NAPOLCOM'] || 'N/A';
                     
                     document.getElementById('matchMessage').textContent = result.message;
-                    document.getElementById('resultCard').classList.remove('hidden');
+                    resultCard.classList.remove('hidden');
+                    loadingStatus.textContent = 'Application found and displayed.';
                 } else {
-                    alert(result.message);
+                    showMessage('Application Not Found', result.message, 'info');
+                    loadingStatus.textContent = 'No application found with the provided details.';
                 }
             } catch (error) {
                 console.error('Error:', error);
-                if (error.message.includes('GAS_WEB_APP_URL')) {
-                    alert('Configuration Error: ' + error.message + '\n\nGet your URL from: Deploy > Manage deployments in Google Apps Script');
+                if (error.name === 'AbortError') {
+                    showMessage('Request Timeout', 'The search took too long. Please try again.', 'error');
+                    loadingStatus.textContent = 'Search request timed out.';
+                } else if (error.message.includes('not configured')) {
+                    showMessage('Configuration Error', error.message, 'error');
+                    loadingStatus.textContent = 'System configuration error.';
                 } else {
-                    alert('Connection error: ' + error.message + '\n\nPlease check:\n1. GAS is deployed as "Anyone"\n2. Correct GAS URL is set\n3. No browser extensions blocking requests');
+                    showMessage('Connection Error', `An error occurred: ${error.message}\n\nPlease check your internet connection and ensure the service is available.`, 'error');
+                    loadingStatus.textContent = 'Network error occurred during search.';
                 }
             } finally {
-                button.disabled = false;
-                spinner.classList.add('hidden');
-                buttonText.textContent = 'Search Application Status';
+                buttonText.textContent = 'Search';
+                loadingSpinner.classList.add('hidden');
+                searchButton.disabled = false;
             }
         });
 
-        // Focus on first input when page loads
-        document.addEventListener('DOMContentLoaded', function() {
+        clearButton.addEventListener('click', function() {
+            searchForm.reset();
+            resultCard.classList.add('hidden');
             document.getElementById('lastNameInput').focus();
-            
-            // Set today's date as placeholder in the date field
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('birthdayInput').value = '1982-01-22'; // Example date
+            document.getElementById('birthdayInput').value = '1982-01-22';
+            loadingStatus.textContent = 'Form cleared.';
         });
 
-        // Add date format validation
-        document.getElementById('birthdayInput').addEventListener('change', function(e) {
-            const dateValue = e.target.value;
-            if (dateValue && !/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
-                alert('Please use YYYY-MM-DD format for the date (e.g., 1982-01-22)');
-                e.target.value = '';
+        // --- PAGE INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('lastNameInput').focus();
+            document.getElementById('birthdayInput').value = '1982-01-22';
+            loadingStatus.textContent = 'Application loaded and ready for search.';
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
             }
         });
     </script>
