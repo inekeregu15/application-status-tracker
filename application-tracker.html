@@ -28,13 +28,14 @@
             font-size: 0.875rem;
             white-space: nowrap;
         }
-        .status-Submitted { background-color: #bfdbfe; color: #1e40af; }
-        .status-InReview { background-color: #fde68a; color: #b45309; }
-        .status-Approved { background-color: #d1fae5; color: #065f46; }
-        .status-Denied { background-color: #fee2e2; color: #991b1b; }
-        .status-Completed { background-color: #e0f2f1; color: #0e7490; }
-        .status-OnHold { background-color: #f3e8ff; color: #7e22ce; }
-        .status-Returned { background-color: #fef3c7; color: #d97706; }
+        /* Custom Status Colors for clarity */
+        .status-Submitted { background-color: #bfdbfe; color: #1e40af; } /* Blue */
+        .status-InReview { background-color: #fde68a; color: #b45309; } /* Yellow/Amber */
+        .status-Approved { background-color: #d1fae5; color: #065f46; } /* Green */
+        .status-Denied { background-color: #fee2e2; color: #991b1b; } /* Red */
+        .status-Completed { background-color: #e0f2f1; color: #0e7490; } /* Cyan */
+        .status-OnHold { background-color: #f3e8ff; color: #7e22ce; } /* Purple */
+        .status-Returned { background-color: #fef3c7; color: #d97706; } /* Orange */
         .hidden { display: none !important; }
 
         /* Modal animation */
@@ -44,18 +45,13 @@
         #messageModal > div {
             transition: transform 0.3s ease;
         }
-        
-        /* Focus styles for accessibility */
-        input:focus, button:focus {
-            outline: 2px solid #3b82f6;
-            outline-offset: 2px;
-        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     <!-- Main Application Card -->
     <div id="app" class="w-full max-w-2xl bg-white rounded-xl card p-6 md:p-8">
         <div class="text-center mb-8">
+            <!-- Logo area (no blue border/background) -->
             <div class="inline-flex items-center justify-center w-20 h-20 bg-transparent rounded-full mb-4">
                 <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-16 w-16 object-contain" onerror="this.style.display='none'">
             </div>
@@ -63,7 +59,7 @@
                 Optional Application Tracker
             </h1>
             <p class="text-center text-gray-500 mt-1">
-                Check the status of your retirement application folder.
+                Check the status of your retirement application folder(s).
             </p>
         </div>
 
@@ -77,123 +73,62 @@
             </h2>
             <form id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
-                            <span>Last Name</span><span class="text-red-500 ml-1">*</span>
-                        </label>
-                        <input type="text" id="lastNameInput" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
-                               placeholder="e.g., Dela Cruz"
-                               aria-describedby="lastNameHelp">
-                        <div id="lastNameHelp" class="sr-only">Enter your last name as it appears on official documents</div>
-                    </div>
+                    <!-- First Name Input (Column C) -->
                     <div>
                         <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
                             <span>First Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="firstNameInput" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
-                               placeholder="e.g., Juan"
-                               aria-describedby="firstNameHelp">
-                        <div id="firstNameHelp" class="sr-only">Enter your first name as it appears on official documents</div>
+                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Juan">
+                    </div>
+                    <!-- Middle Name Input (Column D) -->
+                    <div>
+                        <label for="middleNameInput" class="text-sm font-semibold text-gray-700 mb-1">Middle Name</label>
+                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Santos (Optional)">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <!-- Last Name Input (Column B) -->
                     <div>
-                        <label for="middleNameInput" class="text-sm font-semibold text-gray-700 mb-1">Middle Name</label>
-                        <input type="text" id="middleNameInput" 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" 
-                               placeholder="e.g., Santos (Optional)">
+                        <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                            <span>Last Name</span><span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Dela Cruz">
                     </div>
+                    <!-- Birthday Input (Column I) -->
                     <div>
                         <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
                             <span>Birthday</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="date" id="birthdayInput" required 
-                               class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150"
-                               aria-describedby="birthdayHelp">
-                        <div id="birthdayHelp" class="sr-only">Enter your date of birth in YYYY-MM-DD format</div>
+                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button type="submit" id="searchButton" 
-                            class="w-full flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
+                    <button type="submit" id="searchButton" class="w-full flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
                         <span id="buttonText">Search</span>
                         <svg id="loadingSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </button>
-                    <button type="button" id="clearButton" 
-                            class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200">
+                    <button type="button" id="clearButton" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200">
                         Clear
                     </button>
                 </div>
             </form>
         </div>
 
-        <!-- Status Result Card -->
-        <div id="resultCard" class="bg-white p-6 rounded-lg border border-gray-200 hidden">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+        <!-- Status Results Area -->
+        <div id="resultsArea" class="hidden">
+            <h2 id="resultsHeader" class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                Application Details
+                Latest Application Status
             </h2>
-            <div class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Full Name:</span>
-                        <span id="fullNameResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Rank:</span>
-                        <span id="rankResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Effectivity Date:</span>
-                        <span id="effectivityDateResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Status:</span>
-                        <span id="statusResult" class="text-left sm:text-right">-</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Unit/Region:</span>
-                        <span id="unitResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium">Reason to Retire:</span>
-                        <span id="reasonResult" class="text-gray-900 font-semibold text-left sm:text-right">-</span>
-                    </div>
-                </div>
-                <div class="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
-                    <h3 class="font-semibold text-blue-800 mb-2">Application Timeline</h3>
-                    <div class="space-y-2 text-sm">
-                        <div class="flex justify-between">
-                            <span class="text-blue-700 font-medium">Date Received:</span>
-                            <span id="receivedDateResult" class="text-gray-800">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-blue-700 font-medium">Date Review:</span>
-                            <span id="reviewDateResult" class="text-gray-800">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-blue-700 font-medium">Forwarded to TCDA:</span>
-                            <span id="tcdaDateResult" class="text-gray-800">-</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-blue-700 font-medium">Forwarded to NAPOLCOM:</span>
-                            <span id="napolcomDateResult" class="text-gray-800">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-yellow-50 p-3 rounded-lg border border-yellow-200">
-                    <h3 class="font-semibold text-yellow-800 mb-2">Remarks</h3>
-                    <p id="remarksResult" class="text-sm text-gray-700">-</p>
-                </div>
+            <div id="resultsContainer" class="space-y-6">
+                <!-- Individual result cards will be injected here -->
             </div>
-            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg"></p>
+            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg hidden"></p>
         </div>
 
         <!-- How-to-Search Card -->
@@ -236,12 +171,10 @@
         </div>
     </div>
 
-    <!-- Loading status for screen readers -->
-    <div id="loadingStatus" class="sr-only" aria-live="polite" aria-atomic="true"></div>
-
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbziqiprvMlXn3xaIs24w7bi0Pa-enjffTNFOWXorJUWLG4N25SaPK1JsqW59dCawEtT/exec";
+        // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxMQle0lc-ECi-D4mjPwMB4RcZRzVSIsnHmAAYxdlxk7U8rCFlxdzuq76cWR28liZGT/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -249,19 +182,48 @@
         const clearButton = document.getElementById('clearButton');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const buttonText = document.getElementById('buttonText');
-        const resultCard = document.getElementById('resultCard');
+        const resultsArea = document.getElementById('resultsArea');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const resultsHeader = document.getElementById('resultsHeader'); 
+        const matchMessage = document.getElementById('matchMessage');
         const modal = document.getElementById('messageModal');
         const closeModalButton = document.getElementById('closeModalButton');
         const modalIcon = document.getElementById('modalIcon');
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
-        const loadingStatus = document.getElementById('loadingStatus');
+
+        // --- MOCK DATA (FOR DEMO/TESTING ONLY) ---
+        // MOCK data now uses the LASTNAME, FIRSTNAME MIDDLENAME format.
+        const MOCK_RESULTS = [{
+                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 1/2 - Older)', 
+                'RANK': 'Police Major', 
+                'UNIT/REGION': 'PRO-NCRPO', 
+                'STATUS': 'In Review', 
+                'EFFECTIVITY DATE': 'October 16, 2026', 
+                'DATE RECEIVED': 'September 15, 2025', // OLDER
+                'DATE REVIEW': 'September 16, 2025', 
+                'DATE FORWARDED IN TCDA': 'September 17, 2025', 
+                'DATE FORWARDED IN NAPOLCOM': 'October 2, 2025' 
+            },
+            {
+                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 2/2 - Latest)',
+                'RANK': 'Police Lieutenant',
+                'UNIT/REGION': 'Camp Crame',
+                'STATUS': 'Submitted',
+                'EFFECTIVITY DATE': 'January 1, 2027',
+                'DATE RECEIVED': 'October 10, 2025', // LATEST
+                'DATE REVIEW': 'N/A',
+                'DATE FORWARDED IN TCDA': 'N/A',
+                'DATE FORWARDED IN NAPOLCOM': 'N/A'
+            }
+        ];
+
 
         // --- MODAL DIALOG LOGIC ---
         function showMessage(title, message, type = 'error') {
             modalTitle.textContent = title;
             modalMessage.textContent = message;
-            modalIcon.innerHTML = '';
+            modalIcon.innerHTML = ''; // Clear previous icon
             let iconClass = '';
             let iconSvg = '';
 
@@ -274,7 +236,7 @@
                     iconClass = 'bg-blue-100';
                     iconSvg = `<svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
                     break;
-                default:
+                default: // error
                     iconClass = 'bg-red-100';
                     iconSvg = `<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
             }
@@ -282,12 +244,12 @@
             modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
             modalIcon.innerHTML = iconSvg;
             modal.classList.remove('hidden');
-            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10); // Animate in
         }
 
         function hideModal() {
             modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
+            setTimeout(() => modal.classList.add('hidden'), 300); // Wait for animation
         }
 
         closeModalButton.addEventListener('click', hideModal);
@@ -295,36 +257,59 @@
             if (event.target === modal) hideModal();
         });
 
-        // --- INPUT VALIDATION ---
-        function validateInputs(firstName, lastName, birthday) {
-            const errors = [];
-            const nameRegex = /^[a-zA-Z\s\-\.']+$/;
+        /**
+         * Creates and returns an HTML string for a single application result card.
+         * @param {Object} data - The application data object.
+         * @param {number} index - The index of the result (for display purposes).
+         */
+        function createResultCard(data, index) {
+            const statusText = data['STATUS'] || 'Unknown';
+            const statusClass = statusText.replace(/\s+/g, '');
+            // The FULL NAME field is now consistently formatted by the server/mock logic
+            const fullName = data['FULL NAME'] ? `<h3 class="text-lg font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
             
-            if (!nameRegex.test(firstName)) {
-                errors.push('First name contains invalid characters. Only letters, spaces, hyphens, and apostrophes are allowed.');
-            }
-            
-            if (!nameRegex.test(lastName)) {
-                errors.push('Last name contains invalid characters. Only letters, spaces, hyphens, and apostrophes are allowed.');
-            }
-            
-            const birthDate = new Date(birthday);
-            const today = new Date();
-            if (birthDate >= today) {
-                errors.push('Birthday must be in the past.');
-            }
-            
-            if (birthDate.getFullYear() < 1900) {
-                errors.push('Please enter a valid birth year.');
-            }
-            
-            return errors;
+            return `
+                <div class="bg-white p-6 rounded-xl border-t-4 border-blue-600 shadow-md">
+                    ${fullName}
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                                <span class="text-gray-600 font-medium">Effectivity Date:</span>
+                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                                <span class="text-gray-600 font-medium">Status:</span>
+                                <span><span class="status-pill status-${statusClass}">${statusText}</span></span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                                <span class="text-gray-600 font-medium">Rank:</span>
+                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                                <span class="text-gray-600 font-medium">Unit/Region:</span>
+                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-blue-50 p-3 rounded-lg mt-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-2">Detailed Status Timeline</h4>
+                            <div class="space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Received:</span><span class="text-gray-800">${data['DATE RECEIVED'] || 'N/A'}</span></div>
+                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Review:</span><span class="text-gray-800">${data['DATE REVIEW'] || 'N/A'}</span></div>
+                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Forwarded (TCDA):</span><span class="text-gray-800">${data['DATE FORWARDED IN TCDA'] || 'N/A'}</span></div>
+                                <div class="flex justify-between"><span class="text-blue-700 font-medium">Date Forwarded (NAPOLCOM):</span><span class="text-gray-800">${data['DATE FORWARDED IN NAPOLCOM'] || 'N/A'}</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
         }
 
         // --- FORM HANDLING LOGIC ---
         searchForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            resultCard.classList.add('hidden');
+            resultsArea.classList.add('hidden');
+            resultsContainer.innerHTML = ''; // Clear old results
 
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
@@ -336,24 +321,24 @@
                 return;
             }
 
-            const validationErrors = validateInputs(firstName, lastName, birthday);
-            if (validationErrors.length > 0) {
-                showMessage('Invalid Input', validationErrors.join('\n'), 'error');
-                return;
-            }
-
+            // Set loading state
             buttonText.textContent = 'Searching...';
             loadingSpinner.classList.remove('hidden');
             searchButton.disabled = true;
-            loadingStatus.textContent = 'Searching for application, please wait...';
 
             try {
-                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_DEPLOYED_WEB_APP_URL_HERE")) {
-                    throw new Error('Application not configured. Please contact system administrator.');
+                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
+                    // --- MOCK DATA SIMULATION (LATEST ONLY) ---
+                    // Record 2/2 has the LATEST date (Oct 10, 2025). We only return this one.
+                    const latestResult = [MOCK_RESULTS[1]]; 
+                    const mockMessage = latestResult.length > 1 
+                        ? "Using mock data. Multiple records were found, but only the **latest one** based on Date Received is displayed."
+                        : "Using mock data. One application record found.";
+                        
+                    displayResults(latestResult, mockMessage);
+                    return;
+                    // throw new Error('Please update the GAS_WEB_APP_URL constant in the script with your actual Google Apps Script URL.');
                 }
-
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
 
                 const url = new URL(GAS_WEB_APP_URL);
                 url.searchParams.append('ln', lastName);
@@ -362,9 +347,24 @@
                 url.searchParams.append('bd', birthday);
 
                 console.log('Making request to:', url.toString());
-                const response = await fetch(url, { signal: controller.signal });
-                clearTimeout(timeoutId);
+                
+                // Implement exponential backoff for API calls
+                let response = null;
+                const maxRetries = 3;
+                let delay = 1000;
 
+                for (let i = 0; i < maxRetries; i++) {
+                    try {
+                        response = await fetch(url);
+                        if (response.status !== 429) break; // Break if not rate limiting
+                    } catch (err) {
+                        console.error("Fetch attempt failed:", err);
+                        if (i === maxRetries - 1) throw err;
+                    }
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    delay *= 2;
+                }
+                
                 if (!response.ok) {
                     throw new Error(`The server responded with status: ${response.status}. Please try again later.`);
                 }
@@ -372,75 +372,73 @@
                 const result = await response.json();
                 console.log('Response received:', result);
 
-                if (result.status === 'success') {
-                    const data = result.data;
-                    
-                    // Update the display with the retrieved data
-                    document.getElementById('fullNameResult').textContent = data['FULLNAME'] || 'N/A';
-                    document.getElementById('rankResult').textContent = data['RANK'] || 'N/A';
-                    document.getElementById('effectivityDateResult').textContent = data['EFFECTIVITY DATE'] || 'N/A';
-                    document.getElementById('unitResult').textContent = data['UNIT/REGION'] || 'N/A';
-                    document.getElementById('reasonResult').textContent = data['REASON TO RETIRE'] || 'N/A';
-                    document.getElementById('remarksResult').textContent = data['REMARKS'] || 'N/A';
-                    
-                    const statusResult = document.getElementById('statusResult');
-                    statusResult.innerHTML = '';
-                    const statusPill = document.createElement('span');
-                    const statusText = data['STATUS'] || 'Unknown';
-                    statusPill.textContent = statusText;
-                    statusPill.className = `status-pill status-${statusText.replace(/\s+/g, '')}`;
-                    statusResult.appendChild(statusPill);
-                    
-                    document.getElementById('receivedDateResult').textContent = data['RECEIVED'] || 'N/A';
-                    document.getElementById('reviewDateResult').textContent = data['DATE REVIEW'] || 'N/A';
-                    document.getElementById('tcdaDateResult').textContent = data['FORWARDED TO TDCA'] || 'N/A';
-                    document.getElementById('napolcomDateResult').textContent = data['FORWARDED TO NAPOLCOM'] || 'N/A';
-                    
-                    document.getElementById('matchMessage').textContent = result.message;
-                    resultCard.classList.remove('hidden');
-                    loadingStatus.textContent = 'Application found and displayed.';
+                if (result.status === 'success' && result.data && result.data.length > 0) {
+                    // Since the backend now only returns the LATEST match, we display it.
+                    displayResults(result.data, result.message);
                 } else {
-                    showMessage('Application Not Found', result.message, 'info');
-                    loadingStatus.textContent = 'No application found with the provided details.';
+                    showMessage('Application Not Found', result.message || 'No matching applications were found for the provided details.', 'info');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                if (error.name === 'AbortError') {
-                    showMessage('Request Timeout', 'The search took too long. Please try again.', 'error');
-                    loadingStatus.textContent = 'Search request timed out.';
-                } else if (error.message.includes('not configured')) {
-                    showMessage('Configuration Error', error.message, 'error');
-                    loadingStatus.textContent = 'System configuration error.';
+                if (error.message.includes('GAS_WEB_APP_URL')) {
+                     showMessage('Configuration Error', error.message, 'error');
                 } else {
                     showMessage('Connection Error', `An error occurred: ${error.message}\n\nPlease check your internet connection and ensure the service is available.`, 'error');
-                    loadingStatus.textContent = 'Network error occurred during search.';
                 }
             } finally {
+                // Reset loading state
                 buttonText.textContent = 'Search';
                 loadingSpinner.classList.add('hidden');
                 searchButton.disabled = false;
             }
         });
 
+        /**
+         * Clears previous results and displays new results in the DOM.
+         * @param {Array<Object>} results - Array of application objects (expected to be length 1 now).
+         * @param {string} message - Message to display below the results.
+         */
+        function displayResults(results, message) {
+            resultsContainer.innerHTML = '';
+            results.forEach((data, index) => {
+                // We rely on the backend (code.gs) to correctly format the 'FULL NAME' field now.
+                const cardHtml = createResultCard(data, index);
+                resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
+            });
+            
+            // Update the header to reflect the single-result focus
+            resultsHeader.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>Latest Application Status`;
+
+            matchMessage.textContent = message;
+            matchMessage.classList.remove('hidden');
+            resultsArea.classList.remove('hidden');
+        }
+
         clearButton.addEventListener('click', function() {
             searchForm.reset();
-            resultCard.classList.add('hidden');
+            resultsArea.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            matchMessage.classList.add('hidden');
             document.getElementById('lastNameInput').focus();
+            // Reset to example date
             document.getElementById('birthdayInput').value = '1982-01-22';
-            loadingStatus.textContent = 'Form cleared.';
         });
 
         // --- PAGE INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('lastNameInput').focus();
+            // Set example data for easy testing/demo
+            document.getElementById('firstNameInput').value = 'Juan';
+            document.getElementById('middleNameInput').value = 'Santos';
+            document.getElementById('lastNameInput').value = 'Dela Cruz';
             document.getElementById('birthdayInput').value = '1982-01-22';
-            loadingStatus.textContent = 'Application loaded and ready for search.';
-        });
-
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-                hideModal();
-            }
+            
+            // Display only the LATEST mock result on load to show the intended single-result format
+            const latestResult = [MOCK_RESULTS[1]]; 
+            displayResults(latestResult, "Using mock data. Multiple records were found, but only the **latest one** based on Date Received is displayed.");
+            resultsArea.classList.remove('hidden');
         });
     </script>
 </body>
