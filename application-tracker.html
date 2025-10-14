@@ -3,38 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Optional Application Tracker</title>
+    <title>PNP PRBS - Optional Application Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://rsms.me/">
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { font-family: 'Inter', sans-serif; }
         @supports (font-variation-settings: normal) {
             :root { font-family: 'Inter var', sans-serif; }
         }
         body {
-            background-color: #f0f4f8;
+            background: linear-gradient(135deg, #f0f4f8 0%, #e0e7ff 100%);
+            min-height: 100vh;
         }
         .card {
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 10px 10px -5px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
         .status-pill {
             display: inline-flex;
             align-items: center;
-            padding: 0.25rem 0.75rem;
+            padding: 0.5rem 1rem;
             border-radius: 9999px;
             font-weight: 600;
             font-size: 0.875rem;
             white-space: nowrap;
         }
-        /* Custom Status Colors for clarity */
+        /* Custom Status Colors */
         .status-Submitted { background-color: #bfdbfe; color: #1e40af; } /* Blue */
         .status-InReview { background-color: #fde68a; color: #b45309; } /* Yellow/Amber */
-        .status-Approved, .status-Completed { background-color: #d1fae5; color: #065f46; } /* Green/Completed */
+        .status-Approved, .status-Completed { background-color: #d1fae5; color: #065f46; } /* Green */
         .status-Denied { background-color: #fee2e2; color: #991b1b; } /* Red */
         .status-OnHold { background-color: #f3e8ff; color: #7e22ce; } /* Purple */
-        .status-ReturnedwithDiscrepancy, .status-Pull-OutofApplication { background-color: #fef3c7; color: #d97706; } /* Warning/Orange */
+        .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; } /* Orange */
+        .status-PullOutofApplication { background-color: #fef3c7; color: #d97706; } /* Orange */
+        .status-ForwardedtoNapolcom, .status-ForwardedtoTCDA, .status-ForwardedtoTDCA { 
+            background-color: #d1fae5; color: #065f46; 
+        } /* Green */
         .hidden { display: none !important; }
 
         /* Timeline Styling */
@@ -50,33 +60,34 @@
             position: absolute;
             top: 0.2rem;
             left: -0.1rem;
-            width: 0.6rem;
-            height: 0.6rem;
+            width: 0.8rem;
+            height: 0.8rem;
             border-radius: 9999px;
-            background-color: #9ca3af; /* Gray for inactive */
+            background-color: #9ca3af;
             z-index: 10;
+            border: 2px solid white;
         }
         .timeline-line {
             position: absolute;
             left: 0.1rem;
-            top: 0.8rem;
+            top: 1rem;
             bottom: 0;
             width: 2px;
-            background-color: #e5e7eb; /* Light gray line */
+            background-color: #e5e7eb;
         }
         .timeline-step:last-child .timeline-line {
-            display: none; /* Hide line for the last step */
+            display: none;
         }
         /* Active/Exception styles */
         .timeline-step.active .timeline-dot {
-            background-color: #10b981; /* Green for active step */
+            background-color: #10b981;
         }
         .timeline-step.exception .timeline-dot,
         .timeline-step.exception .timeline-line {
-            background-color: #f59e0b; /* Amber for exception step */
+            background-color: #f59e0b;
         }
         .timeline-step.exception .timeline-dot {
-            border: 2px solid #f97316; /* Orange border for clarity */
+            border: 2px solid #f97316;
         }
 
         /* Modal animation */
@@ -86,72 +97,101 @@
         #messageModal > div {
             transition: transform 0.3s ease;
         }
+        
+        /* Custom animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* Gradient backgrounds */
+        .gradient-header {
+            background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
+        }
+        .gradient-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        .gradient-warning {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
     <!-- Main Application Card -->
-    <div id="app" class="w-full max-w-2xl bg-white rounded-xl card p-6 md:p-8">
-        <div class="text-center mb-8">
-            <!-- Logo area (no blue border/background) -->
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-transparent rounded-full mb-4">
-                <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-16 w-16 object-contain" onerror="this.style.display='none'">
+    <div id="app" class="w-full max-w-4xl bg-white rounded-2xl card p-6 md:p-8 fade-in">
+        <!-- Header Section -->
+        <div class="gradient-header text-white rounded-2xl p-6 mb-8 text-center">
+            <div class="flex flex-col md:flex-row items-center justify-center mb-4">
+                <div class="bg-white p-3 rounded-full shadow-lg mb-4 md:mb-0 md:mr-6">
+                    <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-16 w-16 object-contain" onerror="this.style.display='none'">
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight">
+                        Optional Application Tracker
+                    </h1>
+                    <p class="text-blue-100 mt-2 text-lg">
+                        Check the status of your retirement application folder(s)
+                    </p>
+                </div>
             </div>
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">
-                Optional Application Tracker
-            </h1>
-            <p class="text-center text-gray-500 mt-1">
-                Check the status of your retirement application folder(s).
-            </p>
         </div>
 
         <!-- Search Form Card -->
-        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-6">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Find Application
+        <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-200 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-search mr-3 text-blue-500"></i>
+                Find Your Application
             </h2>
             <form id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- First Name Input (Column C) -->
+                    <!-- Last Name Input -->
                     <div>
-                        <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                        <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-blue-500"></i>
+                            <span>Last Name</span><span class="text-red-500 ml-1">*</span>
+                        </label>
+                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Dela Cruz">
+                    </div>
+                    <!-- First Name Input -->
+                    <div>
+                        <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-blue-500"></i>
                             <span>First Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Juan">
-                    </div>
-                    <!-- Middle Name Input (Column D) -->
-                    <div>
-                        <label for="middleNameInput" class="text-sm font-semibold text-gray-700 mb-1">Middle Name</label>
-                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Santos (Optional)">
+                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Juan">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- Last Name Input (Column B) -->
+                    <!-- Middle Name Input -->
                     <div>
-                        <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
-                            <span>Last Name</span><span class="text-red-500 ml-1">*</span>
+                        <label for="middleNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-user mr-2 text-blue-500"></i>
+                            Middle Name
                         </label>
-                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Dela Cruz">
+                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Santos (Optional)">
                     </div>
-                    <!-- Birthday Input (Column I) -->
+                    <!-- Birthday Input -->
                     <div>
-                        <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-1">
+                        <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
                             <span>Birthday</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button type="submit" id="searchButton" class="w-full flex-grow bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex items-center justify-center">
-                        <span id="buttonText">Search</span>
+                    <button type="submit" id="searchButton" class="flex-grow gradient-success hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center">
+                        <span id="buttonText">Search Application</span>
                         <svg id="loadingSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </button>
-                    <button type="button" id="clearButton" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-lg transition duration-200">
+                    <button type="button" id="clearButton" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center">
+                        <i class="fas fa-eraser mr-2"></i>
                         Clear
                     </button>
                 </div>
@@ -159,41 +199,57 @@
         </div>
 
         <!-- Status Results Area -->
-        <div id="resultsArea" class="hidden">
-            <h2 id="resultsHeader" class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+        <div id="resultsArea" class="hidden fade-in">
+            <h2 id="resultsHeader" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                <i class="fas fa-file-alt mr-3 text-blue-500"></i>
                 Latest Application Status
             </h2>
             <div id="resultsContainer" class="space-y-6">
                 <!-- Individual result cards will be injected here -->
             </div>
-            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded-lg hidden"></p>
+            <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded-xl hidden"></p>
         </div>
 
         <!-- How-to-Search Card -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
-            <h3 class="font-semibold text-blue-800 mb-2 flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 mt-8">
+            <h3 class="font-bold text-blue-800 mb-3 flex items-center">
+                <i class="fas fa-info-circle mr-3"></i>
                 How to Search
             </h3>
-            <p class="text-sm text-blue-700">
-                To check your application status, please enter your details in the form above. Fields marked with <span class="text-red-500 font-bold">*</span> are required.
-            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-key text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-blue-800">Required Fields</p>
+                        <p class="text-sm text-blue-700">Last Name, First Name, and Birthday are required for searching.</p>
+                    </div>
+                </div>
+                <div class="flex items-start">
+                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                        <i class="fas fa-user text-blue-600"></i>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-blue-800">Name Format</p>
+                        <p class="text-sm text-blue-700">Enter your name exactly as it appears in official documents.</p>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Footer -->
-        <div class="text-center text-xs text-gray-400 mt-8 border-t pt-4">
-            <p>PNP Retirement and Benefits Administration Service (PRBS)</p>
+        <div class="text-center text-sm text-gray-500 mt-8 border-t pt-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="mb-2 md:mb-0">PNP Retirement and Benefits Administration Service (PRBS)</p>
+                <p>© 2025 PNP PRBS. All rights reserved.</p>
+            </div>
         </div>
     </div>
 
     <!-- Modal for displaying messages -->
     <div id="messageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50 p-4">
-        <div class="relative mx-auto p-5 border w-full max-w-sm shadow-lg rounded-xl bg-white scale-95 transform">
+        <div class="relative mx-auto p-5 border w-full max-w-sm shadow-lg rounded-2xl bg-white scale-95 transform">
             <div class="mt-3 text-center">
                 <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
                     <!-- Icon will be inserted here by JS -->
@@ -203,7 +259,7 @@
                     <p id="modalMessage" class="text-sm text-gray-500 whitespace-pre-wrap"></p>
                 </div>
                 <div class="items-center px-4 py-3">
-                    <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-xl w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200">
                         OK
                     </button>
                 </div>
@@ -213,8 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzLqst5zSrPlmjcJDo24xF441VcX5guQFcskQBEA7aVIWhpFdZUDLrxudBeGzVROvtQ/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyiV9YnJy0i1dQUDqIJii9w5uAPy9yKmI0z9st-pqd_dHnPR3u5o1CT6AzyWXzjkLBx/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -232,6 +287,25 @@
         const modalTitle = document.getElementById('modalTitle');
         const modalMessage = document.getElementById('modalMessage');
 
+        // --- UTILITY FUNCTIONS ---
+        
+        /**
+         * Fixes spaced-out text like "R E T U R N E D W I T H D I S C R E P A N C Y"
+         * and converts it to proper case "Returned with Discrepancy"
+         */
+        function fixSpacedOutText(text) {
+            if (!text) return 'Unknown';
+            
+            // Remove extra spaces between letters and normalize
+            const fixedText = text.replace(/\s+/g, ' ').trim();
+            
+            // Convert to proper case (first letter of each word capitalized)
+            return fixedText.toLowerCase()
+                           .split(' ')
+                           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                           .join(' ');
+        }
+
         // --- MODAL DIALOG LOGIC ---
         function showMessage(title, message, type = 'error') {
             modalTitle.textContent = title;
@@ -243,26 +317,26 @@
             switch (type) {
                 case 'success':
                     iconClass = 'bg-green-100';
-                    iconSvg = `<svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+                    iconSvg = `<i class="fas fa-check text-green-600 text-xl"></i>`;
                     break;
                 case 'info':
                     iconClass = 'bg-blue-100';
-                    iconSvg = `<svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+                    iconSvg = `<i class="fas fa-info text-blue-600 text-xl"></i>`;
                     break;
                 default: // error
                     iconClass = 'bg-red-100';
-                    iconSvg = `<svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>`;
+                    iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>`;
             }
 
             modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
             modalIcon.innerHTML = iconSvg;
             modal.classList.remove('hidden');
-            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10); // Animate in
+            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
         }
 
         function hideModal() {
             modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300); // Wait for animation
+            setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
         closeModalButton.addEventListener('click', hideModal);
@@ -272,22 +346,15 @@
         
         /**
          * Renders a single timeline step with a dot and details.
-         * @param {string} label - The descriptive title of the step.
-         * @param {string} dateText - The date or detail associated with the step.
-         * @param {boolean} isActive - True if this step is the current/most recent successful step.
-         * @param {boolean} isException - True if this step represents a warning or error state.
-         * @param {boolean} isLastActive - True if this is the final active step in the sequence.
          */
         function createTimelineStep(label, dateText, isActive, isException, isLastActive) {
             const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
             const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
             const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
-            const dotClass = isException ? 'bg-orange-400 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
-            const lineClass = isException ? 'bg-orange-400' : (isActive ? 'bg-green-500' : 'bg-gray-300');
             
-            // If it's the last active step (or an exception), the line should not be active/colored below the dot.
-            // This is handled by the main CSS and the active check.
-
+            // Fix any spaced-out text in the label
+            const displayLabel = fixSpacedOutText(label);
+            
             // The exception dot/line styling takes precedence
             const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
             const lineStyle = isException ? 'bg-orange-400' : (isActive && !isLastActive ? 'bg-green-500' : 'bg-gray-300');
@@ -297,7 +364,7 @@
                     <div class="timeline-dot ${dotStyle}"></div>
                     <div class="timeline-line ${lineStyle}"></div>
                     <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
-                        <span class="${labelClass} text-sm mr-4">${label}</span>
+                        <span class="${labelClass} text-sm mr-4">${displayLabel}</span>
                         <span class="${dateClass} text-sm text-right whitespace-nowrap">${dateText}</span>
                     </div>
                 </div>
@@ -306,19 +373,22 @@
 
         /**
          * Creates and returns an HTML string for a single application result card.
-         * @param {Object} data - The application data object.
          */
         function createResultCard(data) {
             const statusText = data['STATUS'] || 'Unknown';
-            // Sanitize status text for CSS class name
-            const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '');
+            // Sanitize status text for CSS class name AND fix the spaced-out text
+            const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
+            const displayStatus = fixSpacedOutText(statusText);
+            
             // Display the FULL NAME
-            const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
+            const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                <i class="fas fa-id-card mr-3 text-blue-500"></i>${data['FULL NAME']}
+            </h3>` : '';
 
             // Helper function to check if a date field has a valid value
             const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
             
-            // --- Timeline Steps Definition (Sequential Order is important) ---
+            // --- Timeline Steps Definition ---
             const timelineEvents = [
                 { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
                 { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
@@ -327,10 +397,10 @@
                 { label: 'Application Process Completed', key: 'EFFECTIVITY DATE', isException: false, isFinal: true }
             ];
 
-            // --- Exception Steps (Exclusive - only one should be active at a time) ---
+            // --- Exception Steps ---
             const exceptionEvents = [
-                { label: 'Returned with Discrepancy (ACTION REQUIRED)', key: 'RETURNED WITH DISCREPANCY', isException: true },
-                { label: 'Application On Hold (ACTION REQUIRED)', key: 'ON HOLD', isException: true },
+                { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
+                { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
                 { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
             ];
 
@@ -338,7 +408,7 @@
             let activeException = null;
             let lastActiveIndex = -1;
 
-            // 1. Check for Active Exception (highest priority visual status)
+            // 1. Check for Active Exception
             for (const event of exceptionEvents) {
                 if (isStatusActive(event.key)) {
                     activeException = event;
@@ -358,43 +428,35 @@
 
             // 3. Render the timeline
             if (activeException) {
-                // If exception is active, only show the initial received/review dates, and then the exception step
                 const preliminarySteps = timelineEvents.slice(0, 2); 
                 
-                // Render preliminary steps up to review date
                 preliminarySteps.forEach((event) => {
                     const dateText = data[event.key] || 'N/A';
                     const isActive = isStatusActive(event.key);
-                    // The line shouldn't be green/active below 'Date Review' if an exception follows
                     const isLastActive = false; 
                     if(isActive) {
                         timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
                     } else if (event.key === 'DATE RECEIVED') {
-                        // Always show received even if not active, or hide if no data
                         if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
                     }
                 });
 
-                // Render the exception step as the current/final step
                 const dateText = data[activeException.key];
                 timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
                 
-                // Add a concluding note
                 timelineHtml += `
                     <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
                         <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                     </div>
                 `;
 
             } else {
-                // Render the normal sequential flow
                 timelineEvents.forEach((event, index) => {
                     const dateText = data[event.key] || 'N/A';
                     const isActive = isStatusActive(event.key);
                     const isCurrent = (index === lastActiveIndex);
                     
-                    // Only render if there is data OR if it's the current/active step.
-                    // We render all steps that came before the last active one for continuity.
                     if (isActive || index <= lastActiveIndex) {
                         timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
                     }
@@ -402,30 +464,45 @@
             }
 
             return `
-                <div class="bg-white p-6 rounded-xl border-t-4 border-blue-600 shadow-md">
+                <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
                     ${fullName}
                     <div class="space-y-4">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium">Effectivity Date:</span>
+                                <span class="text-gray-600 font-medium flex items-center">
+                                    <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
+                                    Effectivity Date:
+                                </span>
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium">Current Status:</span>
-                                <span><span class="status-pill status-${statusClass}">${statusText.replace(/([A-Z])/g, ' $1').trim()}</span></span>
+                                <span class="text-gray-600 font-medium flex items-center">
+                                    <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                                    Current Status:
+                                </span>
+                                <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium">Rank:</span>
+                                <span class="text-gray-600 font-medium flex items-center">
+                                    <i class="fas fa-user-shield mr-2 text-blue-500"></i>
+                                    Rank:
+                                </span>
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium">Unit/Region:</span>
+                                <span class="text-gray-600 font-medium flex items-center">
+                                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                    Unit/Region:
+                                </span>
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
                             </div>
                         </div>
                         
-                        <div class="bg-blue-50 p-4 rounded-lg mt-4 border border-blue-200">
-                            <h4 class="font-semibold text-blue-800 mb-4">Application Progress Timeline</h4>
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
+                            <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
+                                <i class="fas fa-project-diagram mr-2"></i>
+                                Application Progress Timeline
+                            </h4>
                             <div class="relative pl-4 space-y-3">
                                 ${timelineHtml}
                             </div>
@@ -435,36 +512,36 @@
             `;
         }
 
-        // --- FORM HANDLING LOGIC (Now connects to real backend) ---
+        // --- FORM HANDLING LOGIC ---
         searchForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             resultsArea.classList.add('hidden');
-            resultsContainer.innerHTML = ''; // Clear old results
+            resultsContainer.innerHTML = '';
 
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
             const middleName = document.getElementById('middleNameInput').value.trim();
-            const birthday = document.getElementById('birthdayInput').value; // YYYY-MM-DD format
+            const birthday = document.getElementById('birthdayInput').value;
 
             if (!lastName || !firstName || !birthday) {
                 showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
                 return;
             }
             
-            // Set loading state
             buttonText.textContent = 'Searching...';
             loadingSpinner.classList.remove('hidden');
             searchButton.disabled = true;
 
             try {
-                // Build query parameters for Google Apps Script
                 const params = new URLSearchParams({
                     ln: lastName,
                     fn: firstName,
                     bd: birthday,
-                    mn: middleName
+                    mn: middleName || ''
                 });
 
+                console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
+                
                 const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
                 
                 if (!response.ok) {
@@ -472,23 +549,19 @@
                 }
 
                 const result = await response.json();
+                console.log('Response from server:', result);
                 
                 if (result.status === 'success') {
                     displayResults(result.data, result.message);
                 } else {
-                    showMessage('Search Result', result.message, 'info');
+                    showMessage('Application Not Found', result.message, 'info');
                 }
                 
             } catch (error) {
                 console.error('Error:', error);
-                if (error.message.includes('GAS_WEB_APP_URL')) {
-                     showMessage('Configuration Error', error.message, 'error');
-                } else {
-                    showMessage('Connection Error', `An error occurred: ${error.message}\n\nPlease check your internet connection and ensure the service is available.`, 'error');
-                }
+                showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
             } finally {
-                // Reset loading state
-                buttonText.textContent = 'Search';
+                buttonText.textContent = 'Search Application';
                 loadingSpinner.classList.add('hidden');
                 searchButton.disabled = false;
             }
@@ -496,27 +569,23 @@
 
         /**
          * Clears previous results and displays new results in the DOM.
-         * @param {Array<Object>} results - Array of application objects.
-         * @param {string} message - Message to display below the results.
          */
         function displayResults(results, message) {
             resultsContainer.innerHTML = '';
-            results.forEach((data) => {
-                const cardHtml = createResultCard(data);
-                resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
-            });
-            
-            resultsHeader.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>Latest Application Status`;
+            if (results && results.length > 0) {
+                results.forEach((data) => {
+                    const cardHtml = createResultCard(data);
+                    resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
+                });
+                
+                resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500"></i>Latest Application Status`;
 
-            matchMessage.textContent = message;
-            if (message.trim() === "") {
-                matchMessage.classList.add('hidden');
-            } else {
+                matchMessage.textContent = message;
                 matchMessage.classList.remove('hidden');
+                resultsArea.classList.remove('hidden');
+            } else {
+                showMessage('No Results', 'No application data was returned from the server.', 'info');
             }
-            resultsArea.classList.remove('hidden');
         }
 
         clearButton.addEventListener('click', function() {
@@ -534,6 +603,8 @@
             // Set max date for birthday to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('birthdayInput').max = today;
+            
+            console.log('Application loaded. GAS Web App URL:', GAS_WEB_APP_URL);
         });
     </script>
 </body>
