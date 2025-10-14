@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyFf2vTRD7bjENjJ3zLzteDzkZta8aw4T0rL1TZT1PJQAf1XN7iATcVl1xxUtooD6Vf/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyfcWaEGPDarjisVcsWm8mp9EHOjUi6PaUFv4-h-54wBa0DahpyWeuFu_qPR1xJViuX/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -194,13 +194,13 @@
 
         // --- MOCK DATA (FOR DEMO/TESTING ONLY) ---
         const MOCK_RESULTS = [{
-                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 1/2 - Older, Returned)', 
+                'FULL NAME': 'DELA CRUZ, Juan Santos (Sample Application)', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
                 'STATUS': 'Returned with Discrepancy', // Current status set to an exception for demonstration
                 'EFFECTIVITY DATE': 'October 16, 2026', 
-                'DATE RECEIVED': 'September 15, 2025', 
-                'DATE REVIEW': 'September 16, 2025', 
+                'DATE RECEIVED': 'October 2, 2025', // Date provided in user's prompt
+                'DATE REVIEW': 'October 3, 2025', 
                 // ACTIVE Exception status: Will be shown in red font
                 'RETURNED WITH DISCREPANCY': 'October 5, 2025', 
                 // INACTIVE Exception statuses: Will be HIDDEN from the timeline
@@ -208,20 +208,6 @@
                 'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'N/A', 
                 'DATE FORWARDED IN NAPOLCOM': 'N/A' 
-            },
-            {
-                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 2/2 - Latest, Submitted)',
-                'RANK': 'Police Lieutenant',
-                'UNIT/REGION': 'Camp Crame',
-                'STATUS': 'Submitted',
-                'EFFECTIVITY DATE': 'January 1, 2027',
-                'DATE RECEIVED': 'October 10, 2025', 
-                'DATE REVIEW': 'N/A',
-                'RETURNED WITH DISCREPANCY': 'N/A',
-                'ON HOLD': 'N/A',
-                'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'N/A',
-                'DATE FORWARDED IN NAPOLCOM': 'N/A'
             }
         ];
 
@@ -282,7 +268,7 @@
             const createTimelineEntry = (label, key, isException = false) => {
                 const isActive = isStatusActive(key);
 
-                // --- MODIFIED LOGIC HERE: Hide the line if it is an inactive exception status ---
+                // --- LOGIC: Hide the line if it is an inactive exception status (N/A) ---
                 if (isException && !isActive) {
                     return ''; // Returns an empty string, hiding the element
                 }
@@ -340,9 +326,9 @@
                                 ${createTimelineEntry('Date Review', 'DATE REVIEW')}
                                 
                                 <!-- Exception Statuses (Hidden unless active/has a date, shown in red) -->
-                                ${createTimelineEntry('RETURNED WITH DISCREPANCY', 'RETURNED WITH DISCREPANCY', true)}
-                                ${createTimelineEntry('ON HOLD', 'ON HOLD', true)}
-                                ${createTimelineEntry('PULL-OUT OF APPLICATION', 'PULL-OUT OF APPLICATION', true)}
+                                ${createTimelineEntry('Returned with Discrepancy', 'RETURNED WITH DISCREPANCY', true)}
+                                ${createTimelineEntry('On Hold', 'ON HOLD', true)}
+                                ${createTimelineEntry('Pull-Out of Application', 'PULL-OUT OF APPLICATION', true)}
 
                                 <!-- Final Forwarding Steps (Shown even if N/A) -->
                                 ${createTimelineEntry('Date Forwarded (TCDA)', 'DATE FORWARDED IN TCDA')}
@@ -365,67 +351,73 @@
             const middleName = document.getElementById('middleNameInput').value.trim();
             const birthday = document.getElementById('birthdayInput').value;
 
-            if (!lastName || !firstName || !birthday) {
-                showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
-                return;
+            // Only run validation if not automatically submitting the form on load
+            if (searchButton.disabled === false) { 
+                if (!lastName || !firstName || !birthday) {
+                    showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
+                    return;
+                }
             }
-
+            
             // Set loading state
             buttonText.textContent = 'Searching...';
             loadingSpinner.classList.remove('hidden');
             searchButton.disabled = true;
 
             try {
-                if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
-                    // --- MOCK DATA SIMULATION (LATEST ONLY) ---
-                    // Record 1/2 is chosen here to demonstrate the red/hidden logic.
+                // We are prioritizing the mock data display for the sample request
+                if (true) { // Always run mock data for demonstration
+                    // --- MOCK DATA SIMULATION ---
                     const latestResult = [MOCK_RESULTS[0]]; 
-                    const mockMessage = latestResult.length > 1 
-                        ? "Using mock data. Multiple records were found, but only the **latest one** based on Date Received is displayed."
-                        : "Using mock data. One application record found. (Demonstrating 'Returned with Discrepancy' status)";
+                    const mockMessage = "Simulated search result using mock data. Note the **red text** for 'Returned with Discrepancy'.";
                         
                     displayResults(latestResult, mockMessage);
-                    return;
-                    // throw new Error('Please update the GAS_WEB_APP_URL constant in the script with your actual Google Apps Script URL.');
+                    // We don't return here so the finally block can reset the button state
+                } 
+                // Original external API logic (commented out for sample display)
+                /*
+                else if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
+                     throw new Error('Please update the GAS_WEB_APP_URL constant in the script with your actual Google Apps Script URL.');
                 }
+                */
+                else {
+                    const url = new URL(GAS_WEB_APP_URL);
+                    url.searchParams.append('ln', lastName);
+                    url.searchParams.append('fn', firstName);
+                    url.searchParams.append('mn', middleName);
+                    url.searchParams.append('bd', birthday);
 
-                const url = new URL(GAS_WEB_APP_URL);
-                url.searchParams.append('ln', lastName);
-                url.searchParams.append('fn', firstName);
-                url.searchParams.append('mn', middleName);
-                url.searchParams.append('bd', birthday);
+                    console.log('Making request to:', url.toString());
+                    
+                    // Implement exponential backoff for API calls
+                    let response = null;
+                    const maxRetries = 3;
+                    let delay = 1000;
 
-                console.log('Making request to:', url.toString());
-                
-                // Implement exponential backoff for API calls
-                let response = null;
-                const maxRetries = 3;
-                let delay = 1000;
-
-                for (let i = 0; i < maxRetries; i++) {
-                    try {
-                        response = await fetch(url);
-                        if (response.status !== 429) break; // Break if not rate limiting
-                    } catch (err) {
-                        console.error("Fetch attempt failed:", err);
-                        if (i === maxRetries - 1) throw err;
+                    for (let i = 0; i < maxRetries; i++) {
+                        try {
+                            response = await fetch(url);
+                            if (response.status !== 429) break; // Break if not rate limiting
+                        } catch (err) {
+                            console.error("Fetch attempt failed:", err);
+                            if (i === maxRetries - 1) throw err;
+                        }
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        delay *= 2;
                     }
-                    await new Promise(resolve => setTimeout(resolve, delay));
-                    delay *= 2;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`The server responded with status: ${response.status}. Please try again later.`);
-                }
+                    
+                    if (!response.ok) {
+                        throw new Error(`The server responded with status: ${response.status}. Please try again later.`);
+                    }
 
-                const result = await response.json();
-                console.log('Response received:', result);
+                    const result = await response.json();
+                    console.log('Response received:', result);
 
-                if (result.status === 'success' && result.data && result.data.length > 0) {
-                    // Since the backend now only returns the LATEST match, we display it.
-                    displayResults(result.data, result.message);
-                } else {
-                    showMessage('Application Not Found', result.message || 'No matching applications were found for the provided details.', 'info');
+                    if (result.status === 'success' && result.data && result.data.length > 0) {
+                        displayResults(result.data, result.message);
+                    } else {
+                        showMessage('Application Not Found', result.message || 'No matching applications were found for the provided details.', 'info');
+                    }
                 }
             } catch (error) {
                 console.error('Error:', error);
@@ -450,7 +442,6 @@
         function displayResults(results, message) {
             resultsContainer.innerHTML = '';
             results.forEach((data, index) => {
-                // We rely on the backend (code.gs) to correctly format the 'FULL NAME' field now.
                 const cardHtml = createResultCard(data, index);
                 resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
             });
@@ -475,8 +466,18 @@
 
         // --- PAGE INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', function() {
-            // Set focus on the first input
-            document.getElementById('firstNameInput').focus();
+            // Auto-fill mock data for sample display
+            document.getElementById('firstNameInput').value = 'Juan';
+            document.getElementById('lastNameInput').value = 'Dela Cruz';
+            document.getElementById('birthdayInput').value = '1985-05-20'; // Example date
+            
+            // Automatically submit the form to display the sample result
+            // Use requestSubmit() if available, otherwise dispatch a synthetic submit event
+            if (searchForm.requestSubmit) {
+                searchForm.requestSubmit(searchButton);
+            } else {
+                searchForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+            }
         });
     </script>
 </body>
