@@ -35,7 +35,7 @@
         .status-Denied { background-color: #fee2e2; color: #991b1b; } /* Red */
         .status-Completed { background-color: #e0f2f1; color: #0e7490; } /* Cyan */
         .status-OnHold { background-color: #f3e8ff; color: #7e22ce; } /* Purple */
-        .status-Returned { background-color: #fef3c7; color: #d97706; } /* Orange */
+        .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; } /* Orange/Yellow for Returned */
         .hidden { display: none !important; }
 
         /* Modal animation */
@@ -174,7 +174,7 @@
     <script>
         // --- CONFIGURATION ---
         // UPDATE THIS URL WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxtnR7iPpo6VHYTzt2jYx9kkn-DmLZgTGnN7lgwWa88yT8PGAvW1QLUtMKAAuBYq41h/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyFf2vTRD7bjENjJ3zLzteDzkZta8aw4T0rL1TZT1PJQAf1XN7iATcVl1xxUtooD6Vf/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -194,30 +194,31 @@
 
         // --- MOCK DATA (FOR DEMO/TESTING ONLY) ---
         const MOCK_RESULTS = [{
-                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 1/2 - Older)', 
+                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 1/2 - Older, Returned)', 
                 'RANK': 'Police Major', 
                 'UNIT/REGION': 'PRO-NCRPO', 
-                'STATUS': 'In Review', 
+                'STATUS': 'Returned with Discrepancy', // Current status set to an exception for demonstration
                 'EFFECTIVITY DATE': 'October 16, 2026', 
                 'DATE RECEIVED': 'September 15, 2025', 
                 'DATE REVIEW': 'September 16, 2025', 
-                'RETURNED WITH DISCREPANCY': 'N/A',
-                'ON HOLD': 'N/A',
+                // ACTIVE Exception status: Will be shown in red font
+                'RETURNED WITH DISCREPANCY': 'October 5, 2025', 
+                // INACTIVE Exception statuses: Will be HIDDEN from the timeline
+                'ON HOLD': 'N/A', 
                 'PULL-OUT OF APPLICATION': 'N/A',
-                'DATE FORWARDED IN TCDA': 'September 17, 2025', 
-                'DATE FORWARDED IN NAPOLCOM': 'October 2, 2025' 
+                'DATE FORWARDED IN TCDA': 'N/A', 
+                'DATE FORWARDED IN NAPOLCOM': 'N/A' 
             },
             {
-                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 2/2 - Latest)',
+                'FULL NAME': 'DELA CRUZ, Juan Santos (Record 2/2 - Latest, Submitted)',
                 'RANK': 'Police Lieutenant',
                 'UNIT/REGION': 'Camp Crame',
                 'STATUS': 'Submitted',
                 'EFFECTIVITY DATE': 'January 1, 2027',
                 'DATE RECEIVED': 'October 10, 2025', 
                 'DATE REVIEW': 'N/A',
-                // Example: ON HOLD is active (Red)
                 'RETURNED WITH DISCREPANCY': 'N/A',
-                'ON HOLD': 'December 1, 2025',
+                'ON HOLD': 'N/A',
                 'PULL-OUT OF APPLICATION': 'N/A',
                 'DATE FORWARDED IN TCDA': 'N/A',
                 'DATE FORWARDED IN NAPOLCOM': 'N/A'
@@ -270,33 +271,34 @@
          */
         function createResultCard(data, index) {
             const statusText = data['STATUS'] || 'Unknown';
+            // Sanitize status text for CSS class name
             const statusClass = statusText.replace(/\s+/g, '');
             const fullName = data['FULL NAME'] ? `<h3 class="text-lg font-bold text-gray-900 mb-4">${data['FULL NAME']}</h3>` : '';
 
-            // Helper function to determine if a status step is active (has a date)
-            const isStatusActive = (key) => data[key] && data[key] !== 'N/A';
+            // Helper function to determine if a status step is active (has a date other than 'N/A')
+            const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
             
             // Helper function to create a timeline entry (blue for standard, red for exception)
             const createTimelineEntry = (label, key, isException = false) => {
                 const isActive = isStatusActive(key);
+
+                // --- MODIFIED LOGIC HERE: Hide the line if it is an inactive exception status ---
+                if (isException && !isActive) {
+                    return ''; // Returns an empty string, hiding the element
+                }
+                
                 // Determine classes for label and date
                 let labelClass = isException ? 'text-red-700 font-bold' : 'text-blue-700 font-medium';
-                // Date class: Red Semibold if active and exception, Gray Semibold if active and standard, Gray/Normal otherwise
+                
+                // Date class: Red Semibold if active and exception, Gray Semibold/Normal otherwise
                 let dateClass = isActive 
                     ? (isException ? 'text-red-600 font-semibold' : 'text-gray-800 font-semibold') 
-                    : 'text-gray-800';
-
-                // If not active and it's an exception item, de-emphasize with gray colors
-                if (!isActive && isException) {
-                    labelClass = 'text-gray-600 font-medium';
-                    dateClass = 'text-gray-500';
-                }
-
-                // If not active and it's a standard item, keep the standard blue label but let the date default to gray-800
+                    : 'text-gray-800'; 
+                
+                // For standard entries with N/A, we still show the label in blue/date in gray
                 if (!isActive && !isException) {
-                    // Retain text-blue-700 for the label even when inactive for clarity of the standard flow
-                    labelClass = 'text-blue-700 font-medium'; 
-                    // dateClass remains 'text-gray-800' from the initial assignment
+                    labelClass = 'text-blue-700 font-medium';
+                    dateClass = 'text-gray-500'; // Make N/A date slightly lighter gray
                 }
 
 
@@ -337,12 +339,12 @@
                                 ${createTimelineEntry('Date Received', 'DATE RECEIVED')}
                                 ${createTimelineEntry('Date Review', 'DATE REVIEW')}
                                 
-                                <!-- New Exception Statuses (Red and Bold if active) -->
+                                <!-- Exception Statuses (Hidden unless active/has a date, shown in red) -->
                                 ${createTimelineEntry('RETURNED WITH DISCREPANCY', 'RETURNED WITH DISCREPANCY', true)}
                                 ${createTimelineEntry('ON HOLD', 'ON HOLD', true)}
                                 ${createTimelineEntry('PULL-OUT OF APPLICATION', 'PULL-OUT OF APPLICATION', true)}
 
-                                <!-- Final Forwarding Steps -->
+                                <!-- Final Forwarding Steps (Shown even if N/A) -->
                                 ${createTimelineEntry('Date Forwarded (TCDA)', 'DATE FORWARDED IN TCDA')}
                                 ${createTimelineEntry('Date Forwarded (NAPOLCOM)', 'DATE FORWARDED IN NAPOLCOM')}
                             </div>
@@ -376,11 +378,11 @@
             try {
                 if (!GAS_WEB_APP_URL || GAS_WEB_APP_URL.includes("YOUR_SCRIPT_ID")) {
                     // --- MOCK DATA SIMULATION (LATEST ONLY) ---
-                    // Record 2/2 is the latest one.
-                    const latestResult = [MOCK_RESULTS[1]]; 
+                    // Record 1/2 is chosen here to demonstrate the red/hidden logic.
+                    const latestResult = [MOCK_RESULTS[0]]; 
                     const mockMessage = latestResult.length > 1 
                         ? "Using mock data. Multiple records were found, but only the **latest one** based on Date Received is displayed."
-                        : "Using mock data. One application record found.";
+                        : "Using mock data. One application record found. (Demonstrating 'Returned with Discrepancy' status)";
                         
                     displayResults(latestResult, mockMessage);
                     return;
