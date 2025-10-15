@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwr0_w8ZTlJKPwlV4duqHV-iTID_EF5SnX1CB5v1biy8NsP_4AYpKwREFSz_u10Czjg/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz8seewluFAMI0dwzJAmC7YvPie9JMmYbWW2u89dTZrYIK7hsIjBzrST7JpPLNocPdk/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -504,6 +504,14 @@
                 });
             }
 
+            // Add PAIS Account note only when status is "Forwarded to NAPOLCOM"
+            const paisNote = statusText.toLowerCase().includes('forwardedtonapolcom') || 
+                           statusText.toLowerCase().includes('forwarded to napolcom') ? 
+                `<div class="mt-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded-lg text-sm font-medium">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <span class="font-bold">NOTE:</span> All Optional Order will be posted at your respective PAIS Account.
+                </div>` : '';
+
             return `
                 <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
                     ${fullName}
@@ -548,6 +556,7 @@
                                 ${timelineHtml}
                             </div>
                         </div>
+                        ${paisNote}
                     </div>
                 </div>
             `;
