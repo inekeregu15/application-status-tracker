@@ -78,13 +78,16 @@
         .timeline-step:last-child .timeline-line {
             display: none;
         }
-        /* Active/Exception styles */
+        /* Active/Exception styles - KEEP GREEN FOR ACTIVE STEPS */
         .timeline-step.active .timeline-dot {
-            background-color: #10b981;
+            background-color: #10b981; /* Green for active steps */
+        }
+        .timeline-step.active .timeline-line {
+            background-color: #10b981; /* Green line for active steps */
         }
         .timeline-step.exception .timeline-dot,
         .timeline-step.exception .timeline-line {
-            background-color: #f59e0b;
+            background-color: #f59e0b; /* Orange for exceptions */
         }
         .timeline-step.exception .timeline-dot {
             border: 2px solid #f97316;
@@ -269,7 +272,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz8seewluFAMI0dwzJAmC7YvPie9JMmYbWW2u89dTZrYIK7hsIjBzrST7JpPLNocPdk/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyUa_VAqsw4aPgshyG95dhz_3NRCiL7c7BmMo9f9xUAGccqphjoBUbNk9E7ibUOIilo/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -313,15 +316,29 @@
                 fixedText = text.toLowerCase().replace('onhold', 'On Hold');
             }
             
+            // Handle "pulloutofapplication" -> "Pull out of Application"
+            if (text.toLowerCase().includes('pulloutofapplication')) {
+                fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull out of Application');
+            }
+            
+            // Handle "datereview" -> "Review"
+            if (text.toLowerCase().includes('datereview')) {
+                fixedText = text.toLowerCase().replace('datereview', 'Review');
+            }
+            
             // Also handle cases where it might be all caps with no spaces
             if (text === 'FORWARDEDTONAPOLCOM') {
                 fixedText = 'Forwarded to napolcom';
-            } else if (text === 'FORWARDEDTOTCDA') {
-                fixedText = 'Forwarded to tcda';
+            } else if (text === 'FORWARDEDTOTCDA' || text === 'FORWARDEDTOTDCA') {
+                fixedText = 'Forwarded to TCDA';
             } else if (text === 'RETURNEDWITHDISCREPANCY') {
                 fixedText = 'Returned with Discrepancy';
             } else if (text === 'ONHOLD') {
                 fixedText = 'On Hold';
+            } else if (text === 'PULLOUTOFAPPLICATION') {
+                fixedText = 'Pull out of Application';
+            } else if (text === 'DATEREVIEW') {
+                fixedText = 'Review';
             }
             
             // Remove extra spaces between letters and normalize
@@ -337,8 +354,8 @@
             if (formattedText.includes('Napolcom')) {
                 formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
             }
-            if (formattedText.includes('Tcda')) {
-                formattedText = formattedText.replace('Tcda', 'TCDA');
+            if (formattedText.includes('Tcda') || formattedText.includes('Tdca')) {
+                formattedText = formattedText.replace('Tcda', 'TCDA').replace('Tdca', 'TCDA');
             }
             // Ensure "to" is lowercase in current status
             if (formattedText.includes('Forwarded To')) {
@@ -397,9 +414,9 @@
             // Use the label directly since timeline labels are already properly formatted
             const displayLabel = label;
             
-            // The exception dot/line styling takes precedence
+            // KEEP GREEN FOR ACTIVE STEPS, ORANGE FOR EXCEPTIONS, GRAY FOR INACTIVE
             const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
-            const lineStyle = isException ? 'bg-orange-400' : (isActive && !isLastActive ? 'bg-green-500' : 'bg-gray-300');
+            const lineStyle = isException ? 'bg-orange-400' : (isActive ? 'bg-green-500' : 'bg-gray-300');
 
             return `
                 <div class="${containerClass}">
