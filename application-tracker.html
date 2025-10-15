@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyczFSOivivm5x-xu_MP9z6YXf-hmLKqyn0kewhiM0_-w0E4WAV8Q2pPYa9yvcyYl-H/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxV--Z1u69wTPOIXVu5wcJzpf-nVpee1S0wdAhhF0ZFq2X1PYFsKqyg4FeINz0XpJgf/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -296,16 +296,18 @@
         function fixSpacedOutText(text, isTimeline = false) {
             if (!text) return 'Unknown';
             
-            // First, handle cases where text might be one continuous word like "Forwardedtonapolcom"
             let fixedText = text;
             
-            // Check for common status patterns without spaces
-            if (text.includes('forwardedto')) {
-                fixedText = text.replace('forwardedto', 'Forwarded to ');
-            } else if (text.includes('Forwardedto')) {
-                fixedText = text.replace('Forwardedto', 'Forwarded to ');
-            } else if (text.includes('FORWARDEDTO')) {
-                fixedText = text.replace('FORWARDEDTO', 'Forwarded to ');
+            // Handle different cases of "forwardedto" without spaces
+            if (text.toLowerCase().includes('forwardedto')) {
+                fixedText = text.toLowerCase().replace('forwardedto', 'Forwarded to ');
+            }
+            
+            // Also handle cases where it might be all caps with no spaces
+            if (text === 'FORWARDEDTONAPOLCOM') {
+                fixedText = 'Forwarded to napolcom';
+            } else if (text === 'FORWARDEDTOTCDA') {
+                fixedText = 'Forwarded to tcda';
             }
             
             // Remove extra spaces between letters and normalize
@@ -319,9 +321,9 @@
             
             // Special formatting rules
             if (isTimeline) {
-                // For timeline: "Forwarded To TCDA", "Forwarded To NAPOLCOM"
-                if (formattedText.includes('Forwarded To')) {
-                    formattedText = formattedText.replace('Forwarded To', 'Forwarded To');
+                // For timeline: "Document Review (PRBS)", "Forwarded To TCDA", "Forwarded To NAPOLCOM"
+                if (formattedText.includes('Document Review (Prbs)')) {
+                    formattedText = formattedText.replace('Document Review (Prbs)', 'Document Review (PRBS)');
                 }
                 if (formattedText.includes('TCDA')) {
                     formattedText = formattedText.replace('Tcda', 'TCDA');
@@ -329,16 +331,21 @@
                 if (formattedText.includes('Napolcom')) {
                     formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
                 }
+                // Ensure "To" is capitalized in timeline
+                if (formattedText.includes('Forwarded to')) {
+                    formattedText = formattedText.replace('Forwarded to', 'Forwarded To');
+                }
             } else {
                 // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
-                if (formattedText.includes('Forwarded To')) {
-                    formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
-                }
                 if (formattedText.includes('Napolcom')) {
                     formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
                 }
                 if (formattedText.includes('Tcda')) {
                     formattedText = formattedText.replace('Tcda', 'TCDA');
+                }
+                // Ensure "to" is lowercase in current status
+                if (formattedText.includes('Forwarded To')) {
+                    formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
                 }
             }
             
