@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyiV9YnJy0i1dQUDqIJii9w5uAPy9yKmI0z9st-pqd_dHnPR3u5o1CT6AzyWXzjkLBx/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyfnp6q_V39VNpG_mShCs3hb3jioLXxCEaldhVk32IhZDwa8rL6APnZ1Rh5e1tfkjSx/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -393,8 +393,8 @@
                 { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
                 { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
                 { label: 'Forwarded to TCDA', key: 'DATE FORWARDED IN TCDA', isException: false },
-                { label: 'Forwarded to NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
-                { label: 'Application Process Completed', key: 'EFFECTIVITY DATE', isException: false, isFinal: true }
+                { label: 'Forwarded to NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
+                // Removed "Application Process Completed" - NAPOLCOM is now the final step
             ];
 
             // --- Exception Steps ---
