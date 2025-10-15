@@ -133,7 +133,7 @@
                         Optional Application Tracker
                     </h1>
                     <p class="text-blue-100 mt-2 text-lg">
-                        Check the status of your retirement application folder
+                        Check the status of your retirement application folder(s)
                     </p>
                 </div>
             </div>
@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyfnp6q_V39VNpG_mShCs3hb3jioLXxCEaldhVk32IhZDwa8rL6APnZ1Rh5e1tfkjSx/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzrC1_lDr2zgPgll9rCvusquej9VxjKDtOY0g-UuMCzGfm0O1RcygDalHK1Db6hkaVw/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -290,20 +290,47 @@
         // --- UTILITY FUNCTIONS ---
         
         /**
-         * Fixes spaced-out text like "R E T U R N E D W I T H D I S C R E P A N C Y"
-         * and converts it to proper case "Returned with Discrepancy"
+         * Fixes spaced-out text and converts it to proper case with custom formatting
+         * for specific status types
          */
-        function fixSpacedOutText(text) {
+        function fixSpacedOutText(text, isTimeline = false) {
             if (!text) return 'Unknown';
             
             // Remove extra spaces between letters and normalize
             const fixedText = text.replace(/\s+/g, ' ').trim();
             
             // Convert to proper case (first letter of each word capitalized)
-            return fixedText.toLowerCase()
+            let formattedText = fixedText.toLowerCase()
                            .split(' ')
                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                            .join(' ');
+            
+            // Special formatting rules
+            if (isTimeline) {
+                // For timeline: "Forwarded To TCDA", "Forwarded To NAPOLCOM"
+                if (formattedText.includes('Forwarded To')) {
+                    formattedText = formattedText.replace('Forwarded To', 'Forwarded To');
+                }
+                if (formattedText.includes('TCDA')) {
+                    formattedText = formattedText.replace('Tcda', 'TCDA');
+                }
+                if (formattedText.includes('Napolcom')) {
+                    formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
+                }
+            } else {
+                // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
+                if (formattedText.includes('Forwarded To')) {
+                    formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
+                }
+                if (formattedText.includes('Napolcom')) {
+                    formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
+                }
+                if (formattedText.includes('Tcda')) {
+                    formattedText = formattedText.replace('Tcda', 'TCDA');
+                }
+            }
+            
+            return formattedText;
         }
 
         // --- MODAL DIALOG LOGIC ---
@@ -352,8 +379,8 @@
             const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
             const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
             
-            // Fix any spaced-out text in the label
-            const displayLabel = fixSpacedOutText(label);
+            // Fix any spaced-out text in the label with timeline formatting
+            const displayLabel = fixSpacedOutText(label, true); // true for timeline
             
             // The exception dot/line styling takes precedence
             const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
@@ -378,7 +405,7 @@
             const statusText = data['STATUS'] || 'Unknown';
             // Sanitize status text for CSS class name AND fix the spaced-out text
             const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
-            const displayStatus = fixSpacedOutText(statusText);
+            const displayStatus = fixSpacedOutText(statusText, false); // false for current status
             
             // Display the FULL NAME
             const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
@@ -392,9 +419,8 @@
             const timelineEvents = [
                 { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
                 { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
-                { label: 'Forwarded to TCDA', key: 'DATE FORWARDED IN TCDA', isException: false },
-                { label: 'Forwarded to NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
-                // Removed "Application Process Completed" - NAPOLCOM is now the final step
+                { label: 'Forwarded To TCDA', key: 'DATE FORWARDED IN TCDA', isException: false },
+                { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
             ];
 
             // --- Exception Steps ---
