@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpGDF1RGRM6CVjXXQ6V5GfPD3IjzT4-oyNOIzYP-nrv9ekcT5bMN7k1R1n5qLxDsWQ/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwr0_w8ZTlJKPwlV4duqHV-iTID_EF5SnX1CB5v1biy8NsP_4AYpKwREFSz_u10Czjg/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -303,11 +303,25 @@
                 fixedText = text.toLowerCase().replace('forwardedto', 'Forwarded to ');
             }
             
+            // Handle "returnedwithdiscrepancy" -> "Returned with Discrepancy"
+            if (text.toLowerCase().includes('returnedwithdiscrepancy')) {
+                fixedText = text.toLowerCase().replace('returnedwithdiscrepancy', 'Returned with Discrepancy');
+            }
+            
+            // Handle "onhold" -> "On Hold"
+            if (text.toLowerCase().includes('onhold')) {
+                fixedText = text.toLowerCase().replace('onhold', 'On Hold');
+            }
+            
             // Also handle cases where it might be all caps with no spaces
             if (text === 'FORWARDEDTONAPOLCOM') {
                 fixedText = 'Forwarded to napolcom';
             } else if (text === 'FORWARDEDTOTCDA') {
                 fixedText = 'Forwarded to tcda';
+            } else if (text === 'RETURNEDWITHDISCREPANCY') {
+                fixedText = 'Returned with Discrepancy';
+            } else if (text === 'ONHOLD') {
+                fixedText = 'On Hold';
             }
             
             // Remove extra spaces between letters and normalize
