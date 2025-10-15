@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzrC1_lDr2zgPgll9rCvusquej9VxjKDtOY0g-UuMCzGfm0O1RcygDalHK1Db6hkaVw/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyczFSOivivm5x-xu_MP9z6YXf-hmLKqyn0kewhiM0_-w0E4WAV8Q2pPYa9yvcyYl-H/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -296,8 +296,20 @@
         function fixSpacedOutText(text, isTimeline = false) {
             if (!text) return 'Unknown';
             
+            // First, handle cases where text might be one continuous word like "Forwardedtonapolcom"
+            let fixedText = text;
+            
+            // Check for common status patterns without spaces
+            if (text.includes('forwardedto')) {
+                fixedText = text.replace('forwardedto', 'Forwarded to ');
+            } else if (text.includes('Forwardedto')) {
+                fixedText = text.replace('Forwardedto', 'Forwarded to ');
+            } else if (text.includes('FORWARDEDTO')) {
+                fixedText = text.replace('FORWARDEDTO', 'Forwarded to ');
+            }
+            
             // Remove extra spaces between letters and normalize
-            const fixedText = text.replace(/\s+/g, ' ').trim();
+            fixedText = fixedText.replace(/\s+/g, ' ').trim();
             
             // Convert to proper case (first letter of each word capitalized)
             let formattedText = fixedText.toLowerCase()
