@@ -269,7 +269,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwZd860T7cVzjYeJXX4PChe7QRCrraoyvwJh5CWMwSb8sq__kINwHmMZ4E7lj9vrdUQ/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpGDF1RGRM6CVjXXQ6V5GfPD3IjzT4-oyNOIzYP-nrv9ekcT5bMN7k1R1n5qLxDsWQ/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -293,7 +293,7 @@
          * Fixes spaced-out text and converts it to proper case with custom formatting
          * for specific status types
          */
-        function fixSpacedOutText(text, isTimeline = false) {
+        function fixSpacedOutText(text) {
             if (!text) return 'Unknown';
             
             let fixedText = text;
@@ -319,34 +319,16 @@
                            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
                            .join(' ');
             
-            // Special formatting rules
-            if (isTimeline) {
-                // For timeline: "Document Review (PRBS)", "Forwarded To TCDA", "Forwarded To NAPOLCOM"
-                if (formattedText.includes('Document Review (Prbs)')) {
-                    formattedText = formattedText.replace('Document Review (Prbs)', 'Document Review (PRBS)');
-                }
-                if (formattedText.includes('TCDA')) {
-                    formattedText = formattedText.replace('Tcda', 'TCDA');
-                }
-                if (formattedText.includes('Napolcom')) {
-                    formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
-                }
-                // Ensure "To" is capitalized in timeline
-                if (formattedText.includes('Forwarded to')) {
-                    formattedText = formattedText.replace('Forwarded to', 'Forwarded To');
-                }
-            } else {
-                // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
-                if (formattedText.includes('Napolcom')) {
-                    formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
-                }
-                if (formattedText.includes('Tcda')) {
-                    formattedText = formattedText.replace('Tcda', 'TCDA');
-                }
-                // Ensure "to" is lowercase in current status
-                if (formattedText.includes('Forwarded To')) {
-                    formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
-                }
+            // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
+            if (formattedText.includes('Napolcom')) {
+                formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
+            }
+            if (formattedText.includes('Tcda')) {
+                formattedText = formattedText.replace('Tcda', 'TCDA');
+            }
+            // Ensure "to" is lowercase in current status
+            if (formattedText.includes('Forwarded To')) {
+                formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
             }
             
             return formattedText;
@@ -398,8 +380,8 @@
             const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
             const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
             
-            // Fix any spaced-out text in the label with timeline formatting
-            const displayLabel = fixSpacedOutText(label, true); // true for timeline
+            // Use the label directly since timeline labels are already properly formatted
+            const displayLabel = label;
             
             // The exception dot/line styling takes precedence
             const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
@@ -424,7 +406,7 @@
             const statusText = data['STATUS'] || 'Unknown';
             // Sanitize status text for CSS class name AND fix the spaced-out text
             const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
-            const displayStatus = fixSpacedOutText(statusText, false); // false for current status
+            const displayStatus = fixSpacedOutText(statusText);
             
             // Display the FULL NAME
             const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
