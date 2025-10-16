@@ -9,7 +9,13 @@
     <link rel="stylesheet" href="https://rsms.me/inter/inter.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        :root { font-family: 'Inter', sans-serif; }
+        :root { 
+            font-family: 'Inter', sans-serif; 
+            --primary-color: #1e40af;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+        }
         @supports (font-variation-settings: normal) {
             :root { font-family: 'Inter var', sans-serif; }
         }
@@ -114,6 +120,34 @@
         .gradient-warning {
             background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
         }
+        
+        /* Focus styles for accessibility */
+        .focus-visible:focus {
+            outline: 2px solid var(--primary-color);
+            outline-offset: 2px;
+        }
+        
+        /* Loading animation */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background: white !important;
+            }
+            .card {
+                box-shadow: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
@@ -123,7 +157,10 @@
         <div class="gradient-header text-white rounded-2xl p-6 mb-8 text-center">
             <div class="flex flex-col md:flex-row items-center justify-center mb-4">
                 <div class="bg-white p-3 rounded-full shadow-lg mb-4 md:mb-0 md:mr-6">
-                    <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" alt="PNP PRBS Logo" class="h-16 w-16 object-contain" onerror="this.style.display='none'">
+                    <img src="https://prbs.pnp.gov.ph/wp-content/uploads/2022/05/PNP-PRBS.png" 
+                         alt="PNP PRBS Logo" 
+                         class="h-16 w-16 object-contain" 
+                         onerror="this.style.display='none'">
                 </div>
                 <div>
                     <h1 class="text-3xl font-bold tracking-tight">
@@ -139,57 +176,87 @@
         <!-- Search Form Card -->
         <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-200 mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-search mr-3 text-blue-500"></i>
+                <i class="fas fa-search mr-3 text-blue-500" aria-hidden="true"></i>
                 Find Your Application
             </h2>
-            <form id="searchForm">
+            <form id="searchForm" novalidate>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <!-- Last Name Input -->
                     <div>
                         <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-500"></i>
+                            <i class="fas fa-user mr-2 text-blue-500" aria-hidden="true"></i>
                             <span>Last Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Dela Cruz">
+                        <input type="text" 
+                               id="lastNameInput" 
+                               required 
+                               class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 focus-visible" 
+                               placeholder="e.g., Dela Cruz"
+                               aria-describedby="lastNameHelp">
+                        <div id="lastNameHelp" class="text-xs text-gray-500 mt-1">Enter your last name as it appears in official documents</div>
                     </div>
                     <!-- First Name Input -->
                     <div>
                         <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-500"></i>
+                            <i class="fas fa-user mr-2 text-blue-500" aria-hidden="true"></i>
                             <span>First Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Juan">
+                        <input type="text" 
+                               id="firstNameInput" 
+                               required 
+                               class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 focus-visible" 
+                               placeholder="e.g., Juan"
+                               aria-describedby="firstNameHelp">
+                        <div id="firstNameHelp" class="text-xs text-gray-500 mt-1">Enter your first name as it appears in official documents</div>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <!-- Middle Name Input -->
                     <div>
                         <label for="middleNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-500"></i>
+                            <i class="fas fa-user mr-2 text-blue-500" aria-hidden="true"></i>
                             Middle Name
                         </label>
-                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Santos (Optional)">
+                        <input type="text" 
+                               id="middleNameInput" 
+                               class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 focus-visible" 
+                               placeholder="e.g., Santos (Optional)">
                     </div>
                     <!-- Birthday Input -->
                     <div>
                         <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
+                            <i class="fas fa-calendar-alt mr-2 text-blue-500" aria-hidden="true"></i>
                             <span>Birthday</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <input type="date" 
+                               id="birthdayInput" 
+                               required 
+                               class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 focus-visible"
+                               aria-describedby="birthdayHelp">
+                        <div id="birthdayHelp" class="text-xs text-gray-500 mt-1">Format: MM/DD/YYYY</div>
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button type="submit" id="searchButton" class="flex-grow gradient-success hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center">
+                    <button type="submit" 
+                            id="searchButton" 
+                            class="flex-grow gradient-success hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center focus-visible">
                         <span id="buttonText">Search Application</span>
                         <svg id="loadingSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </button>
-                    <button type="button" id="clearButton" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center">
-                        <i class="fas fa-eraser mr-2"></i>
+                    <button type="button" 
+                            id="clearButton" 
+                            class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center focus-visible no-print">
+                        <i class="fas fa-eraser mr-2" aria-hidden="true"></i>
                         Clear
+                    </button>
+                    <button type="button" 
+                            id="printButton" 
+                            class="w-full sm:w-auto bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center focus-visible no-print hidden">
+                        <i class="fas fa-print mr-2" aria-hidden="true"></i>
+                        Print
                     </button>
                 </div>
             </form>
@@ -198,7 +265,7 @@
         <!-- Status Results Area -->
         <div id="resultsArea" class="hidden fade-in">
             <h2 id="resultsHeader" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
-                <i class="fas fa-file-alt mr-3 text-blue-500"></i>
+                <i class="fas fa-file-alt mr-3 text-blue-500" aria-hidden="true"></i>
                 Latest Application Status
             </h2>
             <div id="resultsContainer" class="space-y-6">
@@ -210,13 +277,13 @@
         <!-- How-to-Search Card -->
         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 mt-8">
             <h3 class="font-bold text-blue-800 mb-3 flex items-center">
-                <i class="fas fa-info-circle mr-3"></i>
+                <i class="fas fa-info-circle mr-3" aria-hidden="true"></i>
                 How to Search
             </h3>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="flex items-start">
                     <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-key text-blue-600"></i>
+                        <i class="fas fa-key text-blue-600" aria-hidden="true"></i>
                     </div>
                     <div>
                         <p class="font-semibold text-blue-800">Required Fields</p>
@@ -225,7 +292,7 @@
                 </div>
                 <div class="flex items-start">
                     <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-user text-blue-600"></i>
+                        <i class="fas fa-user text-blue-600" aria-hidden="true"></i>
                     </div>
                     <div>
                         <p class="font-semibold text-blue-800">Name Format</p>
@@ -246,9 +313,9 @@
 
     <!-- Modal for displaying messages -->
     <div id="messageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50 p-4">
-        <div class="relative mx-auto p-5 border w-full max-w-sm shadow-lg rounded-2xl bg-white scale-95 transform">
+        <div class="relative mx-auto p-5 border w-full max-w-sm shadow-lg rounded-2xl bg-white scale-95 transform" role="dialog" aria-labelledby="modalTitle" aria-describedby="modalMessage">
             <div class="mt-3 text-center">
-                <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full">
                     <!-- Icon will be inserted here by JS -->
                 </div>
                 <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900 mt-4"></h3>
@@ -256,7 +323,7 @@
                     <p id="modalMessage" class="text-sm text-gray-500 whitespace-pre-wrap"></p>
                 </div>
                 <div class="items-center px-4 py-3">
-                    <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-xl w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200">
+                    <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-xl w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200 focus-visible">
                         OK
                     </button>
                 </div>
@@ -266,12 +333,13 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6Z-3StiF9FaWUVFvVth44MJN8he6TsvnADfWnNxIUQoLxEBxrfSyyoabS-QBW5bYM/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwbq7jMhIQLR4U4AdYGJwrJ7QfI2XZv0ckl8hutwQ0Gjl_aYU2YhpHWqckFxaUgMsnm/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
         const searchButton = document.getElementById('searchButton');
         const clearButton = document.getElementById('clearButton');
+        const printButton = document.getElementById('printButton');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const buttonText = document.getElementById('buttonText');
         const resultsArea = document.getElementById('resultsArea');
@@ -370,21 +438,24 @@
             switch (type) {
                 case 'success':
                     iconClass = 'bg-green-100';
-                    iconSvg = `<i class="fas fa-check text-green-600 text-xl"></i>`;
+                    iconSvg = `<i class="fas fa-check text-green-600 text-xl" aria-hidden="true"></i>`;
                     break;
                 case 'info':
                     iconClass = 'bg-blue-100';
-                    iconSvg = `<i class="fas fa-info text-blue-600 text-xl"></i>`;
+                    iconSvg = `<i class="fas fa-info text-blue-600 text-xl" aria-hidden="true"></i>`;
                     break;
                 default: // error
                     iconClass = 'bg-red-100';
-                    iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>`;
+                    iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl" aria-hidden="true"></i>`;
             }
 
             modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
             modalIcon.innerHTML = iconSvg;
             modal.classList.remove('hidden');
             setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+            
+            // Focus the close button for accessibility
+            setTimeout(() => closeModalButton.focus(), 100);
         }
 
         function hideModal() {
@@ -435,7 +506,7 @@
             
             // Display the FULL NAME
             const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <i class="fas fa-id-card mr-3 text-blue-500"></i>${data['FULL NAME']}
+                <i class="fas fa-id-card mr-3 text-blue-500" aria-hidden="true"></i>${data['FULL NAME']}
             </h3>` : '';
 
             // Helper function to check if a date field has a valid value
@@ -483,7 +554,7 @@
                 
                 timelineHtml += `
                     <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
                         <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                     </div>
                 `;
@@ -502,7 +573,7 @@
             const paisNote = statusText.toLowerCase().includes('forwardedtonapolcom') || 
                            statusText.toLowerCase().includes('forwarded to napolcom') ? 
                 `<div class="mt-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded-lg text-sm font-medium">
-                    <i class="fas fa-info-circle mr-2"></i>
+                    <i class="fas fa-info-circle mr-2" aria-hidden="true"></i>
                     <span class="font-bold">NOTE:</span> All Optional Order will be posted at your respective PAIS Account.
                 </div>` : '';
 
@@ -513,28 +584,28 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
+                                    <i class="fas fa-calendar-check mr-2 text-blue-500" aria-hidden="true"></i>
                                     Effectivity Date:
                                 </span>
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                                    <i class="fas fa-tasks mr-2 text-blue-500" aria-hidden="true"></i>
                                     Current Status:
                                 </span>
                                 <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-user-shield mr-2 text-blue-500"></i>
+                                    <i class="fas fa-user-shield mr-2 text-blue-500" aria-hidden="true"></i>
                                     Rank:
                                 </span>
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                    <i class="fas fa-map-marker-alt mr-2 text-blue-500" aria-hidden="true"></i>
                                     Unit/Region:
                                 </span>
                                 <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
@@ -543,7 +614,7 @@
                         
                         <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
                             <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
-                                <i class="fas fa-project-diagram mr-2"></i>
+                                <i class="fas fa-project-diagram mr-2" aria-hidden="true"></i>
                                 Application Progress Timeline
                             </h4>
                             <div class="relative pl-4 space-y-3">
@@ -561,14 +632,30 @@
             e.preventDefault();
             resultsArea.classList.add('hidden');
             resultsContainer.innerHTML = '';
+            printButton.classList.add('hidden');
 
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
             const middleName = document.getElementById('middleNameInput').value.trim();
             const birthday = document.getElementById('birthdayInput').value;
 
+            // Enhanced validation
             if (!lastName || !firstName || !birthday) {
                 showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
+                return;
+            }
+            
+            // Validate name format (basic check for special characters)
+            const nameRegex = /^[a-zA-Z\s\-.'ñÑ]+$/;
+            if (!nameRegex.test(lastName) || !nameRegex.test(firstName) || (middleName && !nameRegex.test(middleName))) {
+                showMessage('Invalid Name Format', 'Names should only contain letters, spaces, hyphens, apostrophes, and periods.', 'error');
+                return;
+            }
+            
+            // Validate birthday (should not be in the future)
+            const today = new Date().toISOString().split('T')[0];
+            if (birthday > today) {
+                showMessage('Invalid Birthday', 'Birthday cannot be in the future.', 'error');
                 return;
             }
             
@@ -586,7 +673,15 @@
 
                 console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
                 
-                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
+                // Add timeout to fetch request
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+                
+                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`, {
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
@@ -603,7 +698,16 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
+                let errorMessage = 'An error occurred while searching. ';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage += 'The request timed out. Please try again.';
+                } else {
+                    errorMessage += `Error details: ${error.message}`;
+                }
+                
+                errorMessage += '\n\nPlease check your internet connection and try again.';
+                showMessage('Connection Error', errorMessage, 'error');
             } finally {
                 buttonText.textContent = 'Search Application';
                 loadingSpinner.classList.add('hidden');
@@ -622,11 +726,17 @@
                     resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
                 });
                 
-                resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500"></i>Latest Application Status`;
+                resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500" aria-hidden="true"></i>Latest Application Status`;
 
                 matchMessage.textContent = message;
                 matchMessage.classList.remove('hidden');
                 resultsArea.classList.remove('hidden');
+                printButton.classList.remove('hidden');
+                
+                // Scroll to results for better UX
+                setTimeout(() => {
+                    resultsArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
             } else {
                 showMessage('No Results', 'No application data was returned from the server.', 'info');
             }
@@ -637,7 +747,12 @@
             resultsArea.classList.add('hidden');
             resultsContainer.innerHTML = '';
             matchMessage.classList.add('hidden');
+            printButton.classList.add('hidden');
             document.getElementById('lastNameInput').focus();
+        });
+
+        printButton.addEventListener('click', function() {
+            window.print();
         });
 
         // --- PAGE INITIALIZATION ---
@@ -648,7 +763,25 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('birthdayInput').max = today;
             
+            // Set min date for birthday (assuming users are at least 18 years old)
+            const minDate = new Date();
+            minDate.setFullYear(minDate.getFullYear() - 100); // 100 years ago
+            document.getElementById('birthdayInput').min = minDate.toISOString().split('T')[0];
+            
             console.log('Application loaded. GAS Web App URL:', GAS_WEB_APP_URL);
+            
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                // Ctrl+Enter to submit form
+                if (e.ctrlKey && e.key === 'Enter') {
+                    searchForm.dispatchEvent(new Event('submit'));
+                }
+                
+                // Escape to close modal
+                if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                    hideModal();
+                }
+            });
         });
     </script>
 </body>
