@@ -42,7 +42,7 @@
         .status-OnHold { background-color: #f3e8ff; color: #7e22ce; } /* Purple */
         .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; } /* Orange */
         .status-PullOutofApplication { background-color: #fef3c7; color: #d97706; } /* Orange */
-        .status-ForwardedtoNapolcom, .status-ForwardedtoTCDA, .status-ForwardedtoTDCA { 
+        .status-ForwardedtoNapolcom, .status-ForwardedtoTDCA, .status-ForwardedtoTDCA { 
             background-color: #d1fae5; color: #065f46; 
         } /* Green */
         .hidden { display: none !important; }
@@ -323,8 +323,8 @@
             // Also handle cases where it might be all caps with no spaces
             if (text === 'FORWARDEDTONAPOLCOM') {
                 fixedText = 'Forwarded to napolcom';
-            } else if (text === 'FORWARDEDTOTCDA' || text === 'FORWARDEDTOTDCA') {
-                fixedText = 'Forwarded to TCDA';
+            } else if (text === 'FORWARDEDTOTDCA' || text === 'FORWARDEDTOTDCA') {
+                fixedText = 'Forwarded to TDCA';
             } else if (text === 'RETURNEDWITHDISCREPANCY') {
                 fixedText = 'Returned with Discrepancy';
             } else if (text === 'ONHOLD') {
@@ -348,8 +348,8 @@
             if (formattedText.includes('Napolcom')) {
                 formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
             }
-            if (formattedText.includes('Tcda') || formattedText.includes('Tdca')) {
-                formattedText = formattedText.replace('Tcda', 'TCDA').replace('Tdca', 'TCDA');
+            if (formattedText.includes('TDCA') || formattedText.includes('Tdca')) {
+                formattedText = formattedText.replace('TDCA', 'TDCA').replace('Tdca', 'TDCA');
             }
             // Ensure "to" is lowercase in current status
             if (formattedText.includes('Forwarded To')) {
@@ -445,7 +445,7 @@
             const timelineEvents = [
                 { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
                 { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
-                { label: 'Forwarded To TCDA', key: 'DATE FORWARDED IN TCDA', isException: false },
+                { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TDCA', isException: false },
                 { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
             ];
 
