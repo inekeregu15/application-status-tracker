@@ -266,7 +266,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwztxnvrSJKjgbh2IG6ndREglwPYjd5AjHQQBQLWzvZtupJgVDj3UUnAt0hCHqWMajK/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby6Z-3StiF9FaWUVFvVth44MJN8he6TsvnADfWnNxIUQoLxEBxrfSyyoabS-QBW5bYM/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -348,8 +348,8 @@
             if (formattedText.includes('Napolcom')) {
                 formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
             }
-            if (formattedText.includes('TDCA') || formattedText.includes('Tdca')) {
-                formattedText = formattedText.replace('TDCA', 'TDCA').replace('Tdca', 'TDCA');
+            if (formattedText.includes('Tdca') || formattedText.includes('Tdca')) {
+                formattedText = formattedText.replace('Tdca', 'TDCA').replace('Tdca', 'TDCA');
             }
             // Ensure "to" is lowercase in current status
             if (formattedText.includes('Forwarded To')) {
