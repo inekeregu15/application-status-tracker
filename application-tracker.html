@@ -63,7 +63,7 @@
             width: 0.8rem;
             height: 0.8rem;
             border-radius: 9999px;
-            background-color: #9ca3af;
+            background-color: #10b981; /* Default green for all completed steps */
             z-index: 10;
             border: 2px solid white;
         }
@@ -73,18 +73,12 @@
             top: 1rem;
             bottom: 0;
             width: 2px;
-            background-color: #e5e7eb;
+            background-color: #10b981; /* Default green line for all steps */
         }
         .timeline-step:last-child .timeline-line {
             display: none;
         }
-        /* Active/Exception styles - KEEP GREEN FOR ACTIVE STEPS */
-        .timeline-step.active .timeline-dot {
-            background-color: #10b981; /* Green for active steps */
-        }
-        .timeline-step.active .timeline-line {
-            background-color: #10b981; /* Green line for active steps */
-        }
+        /* Exception styles - ORANGE for exception steps */
         .timeline-step.exception .timeline-dot,
         .timeline-step.exception .timeline-line {
             background-color: #f59e0b; /* Orange for exceptions */
@@ -272,7 +266,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyUa_VAqsw4aPgshyG95dhz_3NRCiL7c7BmMo9f9xUAGccqphjoBUbNk9E7ibUOIilo/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwztxnvrSJKjgbh2IG6ndREglwPYjd5AjHQQBQLWzvZtupJgVDj3UUnAt0hCHqWMajK/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -407,16 +401,16 @@
          * Renders a single timeline step with a dot and details.
          */
         function createTimelineStep(label, dateText, isActive, isException, isLastActive) {
-            const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
-            const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
-            const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
+            const containerClass = `timeline-step ${isException ? 'exception' : ''}`;
+            const dateClass = isException ? 'font-semibold text-orange-800' : 'font-semibold text-gray-800';
+            const labelClass = isException ? 'text-orange-700 font-bold' : 'text-gray-700 font-medium';
             
             // Use the label directly since timeline labels are already properly formatted
             const displayLabel = label;
             
-            // KEEP GREEN FOR ACTIVE STEPS, ORANGE FOR EXCEPTIONS, GRAY FOR INACTIVE
-            const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
-            const lineStyle = isException ? 'bg-orange-400' : (isActive ? 'bg-green-500' : 'bg-gray-300');
+            // GREEN FOR ALL STEPS, ORANGE FOR EXCEPTIONS
+            const dotStyle = isException ? 'bg-orange-500 border-2 border-orange-700' : 'bg-green-500';
+            const lineStyle = isException ? 'bg-orange-500' : 'bg-green-500';
 
             return `
                 <div class="${containerClass}">
@@ -464,7 +458,6 @@
 
             let timelineHtml = '';
             let activeException = null;
-            let lastActiveIndex = -1;
 
             // 1. Check for Active Exception
             for (const event of exceptionEvents) {
@@ -474,31 +467,17 @@
                 }
             }
 
-            // 2. Determine the last active sequential step if no exception is active
-            if (!activeException) {
-                for (let i = timelineEvents.length - 1; i >= 0; i--) {
-                    if (isStatusActive(timelineEvents[i].key)) {
-                        lastActiveIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            // 3. Render the timeline
+            // 2. Render the timeline - ALL STEPS ARE GREEN BY DEFAULT
             if (activeException) {
-                const preliminarySteps = timelineEvents.slice(0, 2); 
-                
-                preliminarySteps.forEach((event) => {
-                    const dateText = data[event.key] || 'N/A';
-                    const isActive = isStatusActive(event.key);
-                    const isLastActive = false; 
-                    if(isActive) {
-                        timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
-                    } else if (event.key === 'DATE RECEIVED') {
-                        if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
+                // Show completed steps + exception
+                timelineEvents.forEach((event) => {
+                    if (isStatusActive(event.key)) {
+                        const dateText = data[event.key];
+                        timelineHtml += createTimelineStep(event.label, dateText, true, false, false);
                     }
                 });
 
+                // Add the exception step
                 const dateText = data[activeException.key];
                 timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
                 
@@ -510,13 +489,11 @@
                 `;
 
             } else {
-                timelineEvents.forEach((event, index) => {
+                // Show all completed steps in green
+                timelineEvents.forEach((event) => {
                     const dateText = data[event.key] || 'N/A';
-                    const isActive = isStatusActive(event.key);
-                    const isCurrent = (index === lastActiveIndex);
-                    
-                    if (isActive || index <= lastActiveIndex) {
-                        timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
+                    if (isStatusActive(event.key)) {
+                        timelineHtml += createTimelineStep(event.label, dateText, true, false, false);
                     }
                 });
             }
