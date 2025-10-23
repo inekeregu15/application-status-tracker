@@ -237,419 +237,475 @@
         </div>
     </div>
 
-    <script>
-        // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwV9qn1yO1gqZ2OQgoFcQGFAnd56JHTkIezgwbOH9WKsPCTf_VcJpgJQgOMGqtrQt3H/exec";
+<script>
+    // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby-AJgzuFlQ2-IuahnXFHJ5_IBQb3zUqGpeqWxfbN1TzrwqVe4_arFSQqOMWxgjruYU/exec";
 
-        // DOM ELEMENT REFERENCES
-        const searchForm = document.getElementById('searchForm');
-        const searchButton = document.getElementById('searchButton');
-        const clearButton = document.getElementById('clearButton');
-        const loadingSpinner = document.getElementById('loadingSpinner');
-        const buttonText = document.getElementById('buttonText');
-        const resultsArea = document.getElementById('resultsArea');
-        const resultsContainer = document.getElementById('resultsContainer');
-        const resultsHeader = document.getElementById('resultsHeader'); 
-        const matchMessage = document.getElementById('matchMessage');
-        const modal = document.getElementById('messageModal');
-        const closeModalButton = document.getElementById('closeModalButton');
-        const modalIcon = document.getElementById('modalIcon');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
+    // QUICK WIN: Add search cache
+    const SEARCH_CACHE = new Map();
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
 
-        // --- UTILITY FUNCTIONS ---
+    // DOM ELEMENT REFERENCES
+    const searchForm = document.getElementById('searchForm');
+    const searchButton = document.getElementById('searchButton');
+    const clearButton = document.getElementById('clearButton');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const buttonText = document.getElementById('buttonText');
+    const resultsArea = document.getElementById('resultsArea');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const resultsHeader = document.getElementById('resultsHeader'); 
+    const matchMessage = document.getElementById('matchMessage');
+    const modal = document.getElementById('messageModal');
+    const closeModalButton = document.getElementById('closeModalButton');
+    const modalIcon = document.getElementById('modalIcon');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalMessage = document.getElementById('modalMessage');
+
+    // QUICK WIN: Add form validation and button state management
+    function validateForm() {
+        const lastName = document.getElementById('lastNameInput').value.trim();
+        const firstName = document.getElementById('firstNameInput').value.trim();
+        const birthday = document.getElementById('birthdayInput').value;
         
-        /**
-         * Fixes spaced-out text and converts it to proper case with custom formatting
-         * for specific status types
-         */
-        function fixSpacedOutText(text) {
-            if (!text) return 'Unknown';
-            
-            let fixedText = text;
-            
-            // Handle different cases of "forwardedto" without spaces
-            if (text.toLowerCase().includes('forwardedto')) {
-                fixedText = text.toLowerCase().replace('forwardedto', 'Forwarded to ');
-            }
-            
-            // Handle "returnedwithdiscrepancy" -> "Returned with Discrepancy"
-            if (text.toLowerCase().includes('returnedwithdiscrepancy')) {
-                fixedText = text.toLowerCase().replace('returnedwithdiscrepancy', 'Returned with Discrepancy');
-            }
-            
-            // Handle "onhold" -> "On Hold"
-            if (text.toLowerCase().includes('onhold')) {
-                fixedText = text.toLowerCase().replace('onhold', 'On Hold');
-            }
-            
-            // Handle "pulloutofapplication" -> "Pull out of Application"
-            if (text.toLowerCase().includes('pulloutofapplication')) {
-                fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull out of Application');
-            }
-            
-            // Handle "withoptionalorder" -> "With OPTIONAL ORDER"
-            if (text.toLowerCase().includes('withoptionalorder')) {
-                fixedText = text.toLowerCase().replace('withoptionalorder', 'With OPTIONAL ORDER');
-            }
-            
-            // Remove extra spaces between letters and normalize
-            fixedText = fixedText.replace(/\s+/g, ' ').trim();
-            
-            // Convert to proper case (first letter of each word capitalized)
-            let formattedText = fixedText.toLowerCase()
-                           .split(' ')
-                           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                           .join(' ');
-            
-            // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
-            if (formattedText.includes('Napolcom')) {
-                formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
-            }
-            if (formattedText.includes('Tcda') || formattedText.includes('Tdca')) {
-                formattedText = formattedText.replace('Tcda', 'TDCA').replace('Tdca', 'TDCA');
-            }
-            // Ensure "to" is lowercase in current status
-            if (formattedText.includes('Forwarded To')) {
-                formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
-            }
-            
-            // Special case for "With OPTIONAL ORDER" - make "OPTIONAL ORDER" all caps
-            if (formattedText.includes('With Optional Order')) {
-                formattedText = formattedText.replace('With Optional Order', 'With OPTIONAL ORDER');
-            }
-            
-            return formattedText;
-        }
+        // Enable search button only when required fields are filled
+        searchButton.disabled = !(lastName && firstName && birthday);
+    }
 
-        // --- MODAL DIALOG LOGIC ---
-        function showMessage(title, message, type = 'error') {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalIcon.innerHTML = ''; // Clear previous icon
-            let iconClass = '';
-            let iconSvg = '';
+    // QUICK WIN: Add input event listeners for real-time validation
+    document.getElementById('lastNameInput').addEventListener('input', validateForm);
+    document.getElementById('firstNameInput').addEventListener('input', validateForm);
+    document.getElementById('birthdayInput').addEventListener('change', validateForm);
 
-            switch (type) {
-                case 'success':
-                    iconClass = 'bg-green-100';
-                    iconSvg = `<i class="fas fa-check text-green-600 text-xl"></i>`;
-                    break;
-                case 'info':
-                    iconClass = 'bg-blue-100';
-                    iconSvg = `<i class="fas fa-info text-blue-600 text-xl"></i>`;
-                    break;
-                default: // error
-                    iconClass = 'bg-red-100';
-                    iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>`;
-            }
-
-            modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
-            modalIcon.innerHTML = iconSvg;
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
-        }
-
-        function hideModal() {
-            modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        closeModalButton.addEventListener('click', hideModal);
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) hideModal();
-        });
+    // --- UTILITY FUNCTIONS ---
+    
+    /**
+     * Fixes spaced-out text and converts it to proper case with custom formatting
+     * for specific status types
+     */
+    function fixSpacedOutText(text) {
+        if (!text) return 'Unknown';
         
-        /**
-         * Renders a single timeline step with a dot and details.
-         */
-        function createTimelineStep(label, dateText, isActive, isException, isLastActive) {
-            const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
-            const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
-            const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
-            
-            // Use the label directly since timeline labels are already properly formatted
-            const displayLabel = label;
-            
-            // GREEN FOR ALL STEPS, RED FOR EXCEPTIONS ONLY (NO GRAY)
-            const dotStyle = isException ? 'bg-red-500 border-2 border-red-700' : 'bg-green-500';
-            const lineStyle = isException ? 'bg-red-500' : 'bg-green-500';
+        let fixedText = text;
+        
+        // Handle different cases of "forwardedto" without spaces
+        if (text.toLowerCase().includes('forwardedto')) {
+            fixedText = text.toLowerCase().replace('forwardedto', 'Forwarded to ');
+        }
+        
+        // Handle "returnedwithdiscrepancy" -> "Returned with Discrepancy"
+        if (text.toLowerCase().includes('returnedwithdiscrepancy')) {
+            fixedText = text.toLowerCase().replace('returnedwithdiscrepancy', 'Returned with Discrepancy');
+        }
+        
+        // Handle "onhold" -> "On Hold"
+        if (text.toLowerCase().includes('onhold')) {
+            fixedText = text.toLowerCase().replace('onhold', 'On Hold');
+        }
+        
+        // Handle "pulloutofapplication" -> "Pull out of Application"
+        if (text.toLowerCase().includes('pulloutofapplication')) {
+            fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull out of Application');
+        }
+        
+        // Handle "withoptionalorder" -> "With OPTIONAL ORDER"
+        if (text.toLowerCase().includes('withoptionalorder')) {
+            fixedText = text.toLowerCase().replace('withoptionalorder', 'With OPTIONAL ORDER');
+        }
+        
+        // Remove extra spaces between letters and normalize
+        fixedText = fixedText.replace(/\s+/g, ' ').trim();
+        
+        // Convert to proper case (first letter of each word capitalized)
+        let formattedText = fixedText.toLowerCase()
+                       .split(' ')
+                       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                       .join(' ');
+        
+        // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
+        if (formattedText.includes('Napolcom')) {
+            formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
+        }
+        if (formattedText.includes('Tcda') || formattedText.includes('Tdca')) {
+            formattedText = formattedText.replace('Tcda', 'TDCA').replace('Tdca', 'TDCA');
+        }
+        // Ensure "to" is lowercase in current status
+        if (formattedText.includes('Forwarded To')) {
+            formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
+        }
+        
+        // Special case for "With OPTIONAL ORDER" - make "OPTIONAL ORDER" all caps
+        if (formattedText.includes('With Optional Order')) {
+            formattedText = formattedText.replace('With Optional Order', 'With OPTIONAL ORDER');
+        }
+        
+        return formattedText;
+    }
 
-            return `
-                <div class="${containerClass}">
-                    <div class="timeline-dot ${dotStyle}"></div>
-                    <div class="timeline-line ${lineStyle}"></div>
-                    <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
-                        <span class="${labelClass} text-sm mr-4">${displayLabel}</span>
-                        <span class="${dateClass} text-sm text-right whitespace-nowrap">${dateText}</span>
-                    </div>
+    // --- MODAL DIALOG LOGIC ---
+    function showMessage(title, message, type = 'error') {
+        modalTitle.textContent = title;
+        modalMessage.textContent = message;
+        modalIcon.innerHTML = ''; // Clear previous icon
+        let iconClass = '';
+        let iconSvg = '';
+
+        switch (type) {
+            case 'success':
+                iconClass = 'bg-green-100';
+                iconSvg = `<i class="fas fa-check text-green-600 text-xl"></i>`;
+                break;
+            case 'info':
+                iconClass = 'bg-blue-100';
+                iconSvg = `<i class="fas fa-info text-blue-600 text-xl"></i>`;
+                break;
+            default: // error
+                iconClass = 'bg-red-100';
+                iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>`;
+        }
+
+        modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
+        modalIcon.innerHTML = iconSvg;
+        modal.classList.remove('hidden');
+        setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+    }
+
+    function hideModal() {
+        modal.querySelector('div').classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+    }
+
+    closeModalButton.addEventListener('click', hideModal);
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) hideModal();
+    });
+    
+    /**
+     * Renders a single timeline step with a dot and details.
+     */
+    function createTimelineStep(label, dateText, isActive, isException, isLastActive) {
+        const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
+        const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
+        const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
+        
+        // Use the label directly since timeline labels are already properly formatted
+        const displayLabel = label;
+        
+        // GREEN FOR ALL STEPS, RED FOR EXCEPTIONS ONLY (NO GRAY)
+        const dotStyle = isException ? 'bg-red-500 border-2 border-red-700' : 'bg-green-500';
+        const lineStyle = isException ? 'bg-red-500' : 'bg-green-500';
+
+        return `
+            <div class="${containerClass}">
+                <div class="timeline-dot ${dotStyle}"></div>
+                <div class="timeline-line ${lineStyle}"></div>
+                <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
+                    <span class="${labelClass} text-sm mr-4">${displayLabel}</span>
+                    <span class="${dateClass} text-sm text-right whitespace-nowrap">${dateText}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    /**
+     * Creates and returns an HTML string for a single application result card.
+     */
+    function createResultCard(data) {
+        const statusText = data['STATUS'] || 'Unknown';
+        // Sanitize status text for CSS class name AND fix the spaced-out text
+        const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
+        const displayStatus = fixSpacedOutText(statusText);
+        
+        // Display the FULL NAME
+        const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-id-card mr-3 text-blue-500"></i>${data['FULL NAME']}
+        </h3>` : '';
+
+        // Helper function to check if a date field has a valid value
+        const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
+        
+        // --- Timeline Steps Definition ---
+        const timelineEvents = [
+            { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
+            { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
+            { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
+            { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
+            { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false } // NEW: Added Optional Order step
+        ];
+
+        // --- Exception Steps ---
+        const exceptionEvents = [
+            { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
+            { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
+            { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
+        ];
+
+        let timelineHtml = '';
+        let activeException = null;
+        let lastActiveIndex = -1;
+
+        // 1. Check for Active Exception
+        for (const event of exceptionEvents) {
+            if (isStatusActive(event.key)) {
+                activeException = event;
+                break;
+            }
+        }
+
+        // 2. Determine the last active sequential step if no exception is active
+        if (!activeException) {
+            for (let i = timelineEvents.length - 1; i >= 0; i--) {
+                if (isStatusActive(timelineEvents[i].key)) {
+                    lastActiveIndex = i;
+                    break;
+                }
+            }
+        }
+
+        // 3. Render the timeline
+        if (activeException) {
+            const preliminarySteps = timelineEvents.slice(0, 2); 
+            
+            preliminarySteps.forEach((event) => {
+                const dateText = data[event.key] || 'N/A';
+                const isActive = isStatusActive(event.key);
+                const isLastActive = false; 
+                if(isActive) {
+                    timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
+                } else if (event.key === 'DATE RECEIVED') {
+                    if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
+                }
+            });
+
+            const dateText = data[activeException.key];
+            timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
+            
+            timelineHtml += `
+                <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                 </div>
             `;
+
+        } else {
+            timelineEvents.forEach((event, index) => {
+                const dateText = data[event.key] || 'N/A';
+                const isActive = isStatusActive(event.key);
+                const isCurrent = (index === lastActiveIndex);
+                
+                if (isActive || index <= lastActiveIndex) {
+                    timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
+                }
+            });
         }
 
-        /**
-         * Creates and returns an HTML string for a single application result card.
-         */
-        function createResultCard(data) {
-            const statusText = data['STATUS'] || 'Unknown';
-            // Sanitize status text for CSS class name AND fix the spaced-out text
-            const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
-            const displayStatus = fixSpacedOutText(statusText);
-            
-            // Display the FULL NAME
-            const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                <i class="fas fa-id-card mr-3 text-blue-500"></i>${data['FULL NAME']}
-            </h3>` : '';
-
-            // Helper function to check if a date field has a valid value
-            const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
-            
-            // --- Timeline Steps Definition ---
-            const timelineEvents = [
-                { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
-                { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
-                { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
-                { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
-                { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false } // NEW: Added Optional Order step
-            ];
-
-            // --- Exception Steps ---
-            const exceptionEvents = [
-                { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
-                { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
-                { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
-            ];
-
-            let timelineHtml = '';
-            let activeException = null;
-            let lastActiveIndex = -1;
-
-            // 1. Check for Active Exception
-            for (const event of exceptionEvents) {
-                if (isStatusActive(event.key)) {
-                    activeException = event;
-                    break;
-                }
-            }
-
-            // 2. Determine the last active sequential step if no exception is active
-            if (!activeException) {
-                for (let i = timelineEvents.length - 1; i >= 0; i--) {
-                    if (isStatusActive(timelineEvents[i].key)) {
-                        lastActiveIndex = i;
-                        break;
-                    }
-                }
-            }
-
-            // 3. Render the timeline
-            if (activeException) {
-                const preliminarySteps = timelineEvents.slice(0, 2); 
-                
-                preliminarySteps.forEach((event) => {
-                    const dateText = data[event.key] || 'N/A';
-                    const isActive = isStatusActive(event.key);
-                    const isLastActive = false; 
-                    if(isActive) {
-                        timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
-                    } else if (event.key === 'DATE RECEIVED') {
-                        if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
-                    }
-                });
-
-                const dateText = data[activeException.key];
-                timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
-                
-                timelineHtml += `
-                    <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
+        // Add Optional Retirement Order section ONLY when status is "With OPTIONAL ORDER"
+        const showOptionalOrderSection = displayStatus.toUpperCase().includes('WITH OPTIONAL ORDER');
+        const optionalOrderSection = showOptionalOrderSection ? `
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-4 flex items-center">
+                    <i class="fas fa-file-contract mr-2"></i>
+                    Optional Retirement Order
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium flex items-center">
+                            <i class="fas fa-hashtag mr-2 text-green-500"></i>
+                            Order Number:
+                        </span>
+                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['ORDER NUMBER'] || 'N/A'}</span>
                     </div>
-                `;
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                        <span class="text-gray-600 font-medium flex items-center">
+                            <i class="fas fa-calendar-check mr-2 text-green-500"></i>
+                            Authority Date:
+                        </span>
+                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
+                    </div>
+                </div>
+            </div>
+        ` : '';
 
-            } else {
-                timelineEvents.forEach((event, index) => {
-                    const dateText = data[event.key] || 'N/A';
-                    const isActive = isStatusActive(event.key);
-                    const isCurrent = (index === lastActiveIndex);
-                    
-                    if (isActive || index <= lastActiveIndex) {
-                        timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
-                    }
-                });
-            }
-
-            // Add Optional Retirement Order section ONLY when status is "With OPTIONAL ORDER"
-            const showOptionalOrderSection = displayStatus.toUpperCase().includes('WITH OPTIONAL ORDER');
-            const optionalOrderSection = showOptionalOrderSection ? `
-                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
-                    <h4 class="font-semibold text-green-800 mb-4 flex items-center">
-                        <i class="fas fa-file-contract mr-2"></i>
-                        Optional Retirement Order
-                    </h4>
+        return `
+            <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
+                ${fullName}
+                <div class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                             <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-hashtag mr-2 text-green-500"></i>
-                                Order Number:
+                                <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
+                                Effectivity Date:
                             </span>
-                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['ORDER NUMBER'] || 'N/A'}</span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                             <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-calendar-check mr-2 text-green-500"></i>
-                                Authority Date:
+                                <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                                Current Status:
                             </span>
-                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
+                            <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-user-shield mr-2 text-blue-500"></i>
+                                Rank:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                Unit/Region:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
                         </div>
                     </div>
+                    
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
+                        <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
+                            <i class="fas fa-project-diagram mr-2"></i>
+                            Application Progress Timeline
+                        </h4>
+                        <div class="relative pl-4 space-y-3">
+                            ${timelineHtml}
+                        </div>
+                    </div>
+                    ${optionalOrderSection}
                 </div>
-            ` : '';
+            </div>
+        `;
+    }
 
-            return `
-                <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
-                    ${fullName}
-                    <div class="space-y-4">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
-                                    Effectivity Date:
-                                </span>
-                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-tasks mr-2 text-blue-500"></i>
-                                    Current Status:
-                                </span>
-                                <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-user-shield mr-2 text-blue-500"></i>
-                                    Rank:
-                                </span>
-                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                                <span class="text-gray-600 font-medium flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
-                                    Unit/Region:
-                                </span>
-                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
-                            </div>
-                        </div>
-                        
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
-                            <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
-                                <i class="fas fa-project-diagram mr-2"></i>
-                                Application Progress Timeline
-                            </h4>
-                            <div class="relative pl-4 space-y-3">
-                                ${timelineHtml}
-                            </div>
-                        </div>
-                        ${optionalOrderSection}
-                    </div>
-                </div>
-            `;
+    // --- FORM HANDLING LOGIC (OPTIMIZED) ---
+    searchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const lastName = document.getElementById('lastNameInput').value.trim();
+        const firstName = document.getElementById('firstNameInput').value.trim();
+        const middleName = document.getElementById('middleNameInput').value.trim();
+        const birthday = document.getElementById('birthdayInput').value;
+
+        if (!lastName || !firstName || !birthday) {
+            showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
+            return;
         }
+        
+        // QUICK WIN: Check cache first before making API call
+        const cacheKey = `${lastName}-${firstName}-${middleName}-${birthday}`;
+        const cachedResult = SEARCH_CACHE.get(cacheKey);
+        
+        if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_DURATION) {
+            // Serve from cache - instant response!
+            displayResults(cachedResult.data, cachedResult.message);
+            showMessage('Fast Results', 'Results loaded from cache instantly!', 'success');
+            return;
+        }
+        
+        // If not in cache, proceed with API call
+        resultsArea.classList.add('hidden');
+        resultsContainer.innerHTML = '';
+        
+        buttonText.textContent = 'Searching...';
+        loadingSpinner.classList.remove('hidden');
+        searchButton.disabled = true;
 
-        // --- FORM HANDLING LOGIC ---
-        searchForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            resultsArea.classList.add('hidden');
-            resultsContainer.innerHTML = '';
+        try {
+            const params = new URLSearchParams({
+                ln: lastName,
+                fn: firstName,
+                bd: birthday,
+                mn: middleName || ''
+            });
 
-            const lastName = document.getElementById('lastNameInput').value.trim();
-            const firstName = document.getElementById('firstNameInput').value.trim();
-            const middleName = document.getElementById('middleNameInput').value.trim();
-            const birthday = document.getElementById('birthdayInput').value;
-
-            if (!lastName || !firstName || !birthday) {
-                showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
-                return;
-            }
+            console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
             
-            buttonText.textContent = 'Searching...';
-            loadingSpinner.classList.remove('hidden');
-            searchButton.disabled = true;
-
-            try {
-                const params = new URLSearchParams({
-                    ln: lastName,
-                    fn: firstName,
-                    bd: birthday,
-                    mn: middleName || ''
-                });
-
-                console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
-                
-                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const result = await response.json();
-                console.log('Response from server:', result);
-                
-                if (result.status === 'success') {
-                    displayResults(result.data, result.message);
-                } else {
-                    showMessage('Application Not Found', result.message, 'info');
-                }
-                
-            } catch (error) {
-                console.error('Error:', error);
-                showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
-            } finally {
-                buttonText.textContent = 'Search Application';
-                loadingSpinner.classList.add('hidden');
-                searchButton.disabled = false;
+            const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        });
 
-        /**
-         * Clears previous results and displays new results in the DOM.
-         */
-        function displayResults(results, message) {
-            resultsContainer.innerHTML = '';
-            if (results && results.length > 0) {
-                results.forEach((data) => {
-                    const cardHtml = createResultCard(data);
-                    resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
+            const result = await response.json();
+            console.log('Response from server:', result);
+            
+            if (result.status === 'success') {
+                // QUICK WIN: Cache successful results
+                SEARCH_CACHE.set(cacheKey, {
+                    data: result.data,
+                    message: result.message,
+                    timestamp: Date.now()
                 });
                 
-                resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500"></i>Latest Application Status`;
-
-                matchMessage.textContent = message;
-                matchMessage.classList.remove('hidden');
-                resultsArea.classList.remove('hidden');
+                displayResults(result.data, result.message);
             } else {
-                showMessage('No Results', 'No application data was returned from the server.', 'info');
+                showMessage('Application Not Found', result.message, 'info');
             }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
+        } finally {
+            buttonText.textContent = 'Search Application';
+            loadingSpinner.classList.add('hidden');
+            searchButton.disabled = false;
+            validateForm(); // Re-validate form state
         }
+    });
 
-        clearButton.addEventListener('click', function() {
-            searchForm.reset();
-            resultsArea.classList.add('hidden');
-            resultsContainer.innerHTML = '';
-            matchMessage.classList.add('hidden');
-            document.getElementById('lastNameInput').focus();
-        });
+    /**
+     * Clears previous results and displays new results in the DOM.
+     */
+    function displayResults(results, message) {
+        resultsContainer.innerHTML = '';
+        if (results && results.length > 0) {
+            // QUICK WIN: Use more efficient DOM updating
+            const fragment = document.createDocumentFragment();
+            
+            results.forEach((data) => {
+                const cardHtml = createResultCard(data);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHtml;
+                if (tempDiv.firstElementChild) {
+                    fragment.appendChild(tempDiv.firstElementChild);
+                }
+            });
+            
+            resultsContainer.appendChild(fragment);
+            
+            resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500"></i>Latest Application Status`;
+            matchMessage.textContent = message;
+            matchMessage.classList.remove('hidden');
+            resultsArea.classList.remove('hidden');
+            
+            // QUICK WIN: Scroll to results smoothly
+            resultsArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            showMessage('No Results', 'No application data was returned from the server.', 'info');
+        }
+    }
 
-        // --- PAGE INITIALIZATION ---
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('lastNameInput').focus();
-            
-            // Set max date for birthday to today
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('birthdayInput').max = today;
-            
-            console.log('Application loaded. GAS Web App URL:', GAS_WEB_APP_URL);
-        });
-    </script>
+    clearButton.addEventListener('click', function() {
+        searchForm.reset();
+        resultsArea.classList.add('hidden');
+        resultsContainer.innerHTML = '';
+        matchMessage.classList.add('hidden');
+        document.getElementById('lastNameInput').focus();
+        validateForm(); // Update button state
+    });
+
+    // --- PAGE INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('lastNameInput').focus();
+        
+        // Set max date for birthday to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('birthdayInput').max = today;
+        
+        // QUICK WIN: Initialize form validation on page load
+        validateForm();
+        
+        console.log('Application loaded. GAS Web App URL:', GAS_WEB_APP_URL);
+        console.log('Search cache enabled with', SEARCH_CACHE.size, 'cached searches');
+    });
+</script>
 </body>
 </html>
