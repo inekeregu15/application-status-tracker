@@ -272,7 +272,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVmPcgwPu_A5oaact8vHYpF8CBuyw7NotFZwWx-y57lzNOVnfSc4wehKdJY75vz_z8/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzgZF6m_wtBQxeNG5ZiWJ3pip-f0nQvoFOaeGSFplU6PuykK3jopkfQiVkispDquZmY/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -330,7 +330,7 @@
             if (text === 'FORWARDEDTONAPOLCOM') {
                 fixedText = 'Forwarded to napolcom';
             } else if (text === 'FORWARDEDTOTCDA' || text === 'FORWARDEDTOTDCA') {
-                fixedText = 'Forwarded to TCDA';
+                fixedText = 'Forwarded to TDCA';
             } else if (text === 'RETURNEDWITHDISCREPANCY') {
                 fixedText = 'Returned with Discrepancy';
             } else if (text === 'ONHOLD') {
@@ -355,7 +355,7 @@
                 formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
             }
             if (formattedText.includes('Tcda') || formattedText.includes('Tdca')) {
-                formattedText = formattedText.replace('Tcda', 'TCDA').replace('Tdca', 'TCDA');
+                formattedText = formattedText.replace('Tcda', 'TDCA').replace('Tdca', 'TDCA');
             }
             // Ensure "to" is lowercase in current status
             if (formattedText.includes('Forwarded To')) {
@@ -451,7 +451,7 @@
             const timelineEvents = [
                 { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
                 { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
-                { label: 'Forwarded To TCDA', key: 'DATE FORWARDED IN TCDA', isException: false },
+                { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
                 { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
             ];
 
@@ -521,12 +521,12 @@
                 });
             }
 
-            // Add Optional Order section with Authority and Authority Date
-            const optionalOrderSection = (data['AUTHORITY'] || data['AUTHORITY DATE']) ? `
+            // Add Optional Retirement Order section with Authority and Authority Date
+            const optionalOrderSection = `
                 <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
                     <h4 class="font-semibold text-green-800 mb-4 flex items-center">
                         <i class="fas fa-file-contract mr-2"></i>
-                        Optional Order
+                        Optional Retirement Order
                     </h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
@@ -545,7 +545,7 @@
                         </div>
                     </div>
                 </div>
-            ` : '';
+            `;
 
             return `
                 <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
