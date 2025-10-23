@@ -19,11 +19,6 @@
         }
         .card {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
         }
         .status-pill {
             display: inline-flex;
@@ -32,22 +27,19 @@
             border-radius: 9999px;
             font-weight: 600;
             font-size: 0.875rem;
-            white-space: nowrap;
         }
-        /* Custom Status Colors */
-        .status-Submitted { background-color: #bfdbfe; color: #1e40af; } /* Blue */
-        .status-InReview { background-color: #fde68a; color: #b45309; } /* Yellow/Amber */
-        .status-Approved, .status-Completed { background-color: #d1fae5; color: #065f46; } /* Green */
-        .status-Denied { background-color: #fee2e2; color: #991b1b; } /* Red */
-        .status-OnHold { background-color: #f3e8ff; color: #7e22ce; } /* Purple */
-        .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; } /* Orange */
-        .status-PullOutofApplication { background-color: #fef3c7; color: #d97706; } /* Orange */
-        .status-ForwardedtoNapolcom, .status-ForwardedtoTCDA, .status-ForwardedtoTDCA { 
+        .status-Submitted { background-color: #bfdbfe; color: #1e40af; }
+        .status-InReview { background-color: #fde68a; color: #b45309; }
+        .status-Approved, .status-Completed { background-color: #d1fae5; color: #065f46; }
+        .status-Denied { background-color: #fee2e2; color: #991b1b; }
+        .status-OnHold { background-color: #f3e8ff; color: #7e22ce; }
+        .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; }
+        .status-PullOutofApplication { background-color: #fef3c7; color: #d97706; }
+        .status-ForwardedtoNapolcom, .status-ForwardedtoTDCA { 
             background-color: #d1fae5; color: #065f46; 
-        } /* Green */
+        }
         .hidden { display: none !important; }
 
-        /* Timeline Styling */
         .timeline-step {
             position: relative;
             padding-left: 1.5rem;
@@ -78,30 +70,13 @@
         .timeline-step:last-child .timeline-line {
             display: none;
         }
-        /* Active/Exception styles - KEEP GREEN FOR ACTIVE STEPS */
         .timeline-step.active .timeline-dot {
-            background-color: #10b981; /* Green for active steps */
+            background-color: #10b981;
         }
         .timeline-step.active .timeline-line {
-            background-color: #10b981; /* Green line for active steps */
-        }
-        .timeline-step.exception .timeline-dot,
-        .timeline-step.exception .timeline-line {
-            background-color: #f59e0b; /* Orange for exceptions */
-        }
-        .timeline-step.exception .timeline-dot {
-            border: 2px solid #f97316;
+            background-color: #10b981;
         }
 
-        /* Modal animation */
-        #messageModal {
-            transition: opacity 0.3s ease;
-        }
-        #messageModal > div {
-            transition: transform 0.3s ease;
-        }
-        
-        /* Custom animations */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -110,22 +85,17 @@
             animation: fadeIn 0.5s ease-out;
         }
         
-        /* Gradient backgrounds */
         .gradient-header {
             background: linear-gradient(135deg, #1e40af 0%, #3730a3 100%);
         }
         .gradient-success {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
-        .gradient-warning {
-            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        }
     </style>
 </head>
 <body class="min-h-screen flex items-center justify-center p-4">
-    <!-- Main Application Card -->
     <div id="app" class="w-full max-w-4xl bg-white rounded-2xl card p-6 md:p-8 fade-in">
-        <!-- Header Section -->
+        <!-- Header -->
         <div class="gradient-header text-white rounded-2xl p-6 mb-8 text-center">
             <div class="flex flex-col md:flex-row items-center justify-center mb-4">
                 <div class="bg-white p-3 rounded-full shadow-lg mb-4 md:mb-0 md:mr-6">
@@ -142,7 +112,7 @@
             </div>
         </div>
 
-        <!-- Search Form Card -->
+        <!-- Search Form -->
         <div class="bg-gradient-to-br from-gray-50 to-blue-50 p-6 rounded-2xl border border-gray-200 mb-8">
             <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <i class="fas fa-search mr-3 text-blue-500"></i>
@@ -150,50 +120,46 @@
             </h2>
             <form id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- Last Name Input -->
                     <div>
                         <label for="lastNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-user mr-2 text-blue-500"></i>
                             <span>Last Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Dela Cruz">
+                        <input type="text" id="lastNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Dela Cruz">
                     </div>
-                    <!-- First Name Input -->
                     <div>
                         <label for="firstNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-user mr-2 text-blue-500"></i>
                             <span>First Name</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Juan">
+                        <input type="text" id="firstNameInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Juan">
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <!-- Middle Name Input -->
                     <div>
                         <label for="middleNameInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-user mr-2 text-blue-500"></i>
                             Middle Name
                         </label>
-                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150" placeholder="e.g., Santos (Optional)">
+                        <input type="text" id="middleNameInput" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="e.g., Santos (Optional)">
                     </div>
-                    <!-- Birthday Input -->
                     <div>
                         <label for="birthdayInput" class="flex items-center text-sm font-semibold text-gray-700 mb-2">
                             <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>
                             <span>Birthday</span><span class="text-red-500 ml-1">*</span>
                         </label>
-                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150">
+                        <input type="date" id="birthdayInput" required class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3 mt-6">
-                    <button type="submit" id="searchButton" class="flex-grow gradient-success hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-md transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50 flex items-center justify-center">
+                    <button type="submit" id="searchButton" class="flex-grow gradient-success hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl shadow-md flex items-center justify-center">
                         <span id="buttonText">Search Application</span>
                         <svg id="loadingSpinner" class="animate-spin ml-2 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </button>
-                    <button type="button" id="clearButton" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-xl transition duration-200 flex items-center justify-center">
+                    <button type="button" id="clearButton" class="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-4 rounded-xl flex items-center justify-center">
                         <i class="fas fa-eraser mr-2"></i>
                         Clear
                     </button>
@@ -201,44 +167,16 @@
             </form>
         </div>
 
-        <!-- Status Results Area -->
+        <!-- Results Area -->
         <div id="resultsArea" class="hidden fade-in">
-            <h2 id="resultsHeader" class="text-xl font-bold text-gray-800 mb-4 flex items-center">
+            <h2 class="text-xl font-bold text-gray-800 mb-4 flex items-center">
                 <i class="fas fa-file-alt mr-3 text-blue-500"></i>
                 Latest Application Status
             </h2>
             <div id="resultsContainer" class="space-y-6">
-                <!-- Individual result cards will be injected here -->
+                <!-- Results will appear here -->
             </div>
             <p id="matchMessage" class="text-sm text-center mt-4 p-3 bg-blue-50 text-blue-800 border border-blue-200 rounded-xl hidden"></p>
-        </div>
-
-        <!-- How-to-Search Card -->
-        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 mt-8">
-            <h3 class="font-bold text-blue-800 mb-3 flex items-center">
-                <i class="fas fa-info-circle mr-3"></i>
-                How to Search
-            </h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div class="flex items-start">
-                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-key text-blue-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-blue-800">Required Fields</p>
-                        <p class="text-sm text-blue-700">Last Name, First Name, and Birthday are required for searching.</p>
-                    </div>
-                </div>
-                <div class="flex items-start">
-                    <div class="bg-blue-100 p-2 rounded-lg mr-3">
-                        <i class="fas fa-user text-blue-600"></i>
-                    </div>
-                    <div>
-                        <p class="font-semibold text-blue-800">Name Format</p>
-                        <p class="text-sm text-blue-700">Enter your name exactly as it appears in official documents.</p>
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- Footer -->
@@ -250,302 +188,76 @@
         </div>
     </div>
 
-    <!-- Modal for displaying messages -->
-    <div id="messageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden z-50 p-4">
-        <div class="relative mx-auto p-5 border w-full max-w-sm shadow-lg rounded-2xl bg-white scale-95 transform">
-            <div class="mt-3 text-center">
-                <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <!-- Icon will be inserted here by JS -->
-                </div>
-                <h3 id="modalTitle" class="text-lg leading-6 font-medium text-gray-900 mt-4"></h3>
-                <div class="mt-2 px-2 py-3">
-                    <p id="modalMessage" class="text-sm text-gray-500 whitespace-pre-wrap"></p>
-                </div>
-                <div class="items-center px-4 py-3">
-                    <button id="closeModalButton" class="px-4 py-2 bg-blue-500 text-white text-base font-medium rounded-xl w-full shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 transition duration-200">
-                        OK
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
-        // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzoaUEnN0IWWCq8g9GHLc5gP-8serZYDuc1LX2YvO72lyg5Sb-qmeehkA7iyS-YlbNm/exec";
+        // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT URL ⚠️
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx41RPacKiZ8IEt71UHu6AS3n7R2XX7MoGSWfJyxHnZ-dfBTt6V_3zv2O04DsxNOtJH/exec";
 
-        // --- DOM ELEMENT REFERENCES ---
+        // DOM elements
         const searchForm = document.getElementById('searchForm');
         const searchButton = document.getElementById('searchButton');
-        const clearButton = document.getElementById('clearButton');
         const loadingSpinner = document.getElementById('loadingSpinner');
         const buttonText = document.getElementById('buttonText');
         const resultsArea = document.getElementById('resultsArea');
         const resultsContainer = document.getElementById('resultsContainer');
-        const resultsHeader = document.getElementById('resultsHeader'); 
         const matchMessage = document.getElementById('matchMessage');
-        const modal = document.getElementById('messageModal');
-        const closeModalButton = document.getElementById('closeModalButton');
-        const modalIcon = document.getElementById('modalIcon');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalMessage = document.getElementById('modalMessage');
 
-        // --- UTILITY FUNCTIONS ---
-        
-        /**
-         * Fixes spaced-out text and converts it to proper case with custom formatting
-         * for specific status types
-         */
+        // Format status text
         function fixSpacedOutText(text) {
             if (!text) return 'Unknown';
-            
-            let fixedText = text;
-            
-            // Handle different cases of "forwardedto" without spaces
-            if (text.toLowerCase().includes('forwardedto')) {
-                fixedText = text.toLowerCase().replace('forwardedto', 'Forwarded to ');
+            let fixed = text.toString();
+            if (fixed.toLowerCase().includes('forwardedto')) {
+                fixed = fixed.toLowerCase().replace('forwardedto', 'Forwarded to ');
             }
-            
-            // Handle "returnedwithdiscrepancy" -> "Returned with Discrepancy"
-            if (text.toLowerCase().includes('returnedwithdiscrepancy')) {
-                fixedText = text.toLowerCase().replace('returnedwithdiscrepancy', 'Returned with Discrepancy');
-            }
-            
-            // Handle "onhold" -> "On Hold"
-            if (text.toLowerCase().includes('onhold')) {
-                fixedText = text.toLowerCase().replace('onhold', 'On Hold');
-            }
-            
-            // Handle "pulloutofapplication" -> "Pull out of Application"
-            if (text.toLowerCase().includes('pulloutofapplication')) {
-                fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull out of Application');
-            }
-            
-            // Handle "datereview" -> "Review"
-            if (text.toLowerCase().includes('datereview')) {
-                fixedText = text.toLowerCase().replace('datereview', 'Review');
-            }
-            
-            // Also handle cases where it might be all caps with no spaces
-            if (text === 'FORWARDEDTONAPOLCOM') {
-                fixedText = 'Forwarded to napolcom';
-            } else if (text === 'FORWARDEDTOTCDA' || text === 'FORWARDEDTOTDCA') {
-                fixedText = 'Forwarded to TDCA';
-            } else if (text === 'RETURNEDWITHDISCREPANCY') {
-                fixedText = 'Returned with Discrepancy';
-            } else if (text === 'ONHOLD') {
-                fixedText = 'On Hold';
-            } else if (text === 'PULLOUTOFAPPLICATION') {
-                fixedText = 'Pull out of Application';
-            } else if (text === 'DATEREVIEW') {
-                fixedText = 'Review';
-            }
-            
-            // Remove extra spaces between letters and normalize
-            fixedText = fixedText.replace(/\s+/g, ' ').trim();
-            
-            // Convert to proper case (first letter of each word capitalized)
-            let formattedText = fixedText.toLowerCase()
-                           .split(' ')
-                           .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                           .join(' ');
-            
-            // For current status: "Forwarded to NAPOLCOM" (lowercase "to", uppercase "NAPOLCOM")
-            if (formattedText.includes('Napolcom')) {
-                formattedText = formattedText.replace('Napolcom', 'NAPOLCOM');
-            }
-            if (formattedText.includes('Tcda') || formattedText.includes('Tdca')) {
-                formattedText = formattedText.replace('Tcda', 'TDCA').replace('Tdca', 'TDCA');
-            }
-            // Ensure "to" is lowercase in current status
-            if (formattedText.includes('Forwarded To')) {
-                formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
-            }
-            
-            return formattedText;
+            return fixed.replace(/\s+/g, ' ').trim();
         }
 
-        // --- MODAL DIALOG LOGIC ---
-        function showMessage(title, message, type = 'error') {
-            modalTitle.textContent = title;
-            modalMessage.textContent = message;
-            modalIcon.innerHTML = ''; // Clear previous icon
-            let iconClass = '';
-            let iconSvg = '';
-
-            switch (type) {
-                case 'success':
-                    iconClass = 'bg-green-100';
-                    iconSvg = `<i class="fas fa-check text-green-600 text-xl"></i>`;
-                    break;
-                case 'info':
-                    iconClass = 'bg-blue-100';
-                    iconSvg = `<i class="fas fa-info text-blue-600 text-xl"></i>`;
-                    break;
-                default: // error
-                    iconClass = 'bg-red-100';
-                    iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>`;
-            }
-
-            modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
-            modalIcon.innerHTML = iconSvg;
-            modal.classList.remove('hidden');
-            setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+        // Show alert message
+        function showMessage(title, message) {
+            alert(title + '\n\n' + message);
         }
 
-        function hideModal() {
-            modal.querySelector('div').classList.add('scale-95');
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        closeModalButton.addEventListener('click', hideModal);
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) hideModal();
-        });
-        
-        /**
-         * Renders a single timeline step with a dot and details.
-         */
-        function createTimelineStep(label, dateText, isActive, isException, isLastActive) {
-            const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
-            const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
-            const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
-            
-            // Use the label directly since timeline labels are already properly formatted
-            const displayLabel = label;
-            
-            // KEEP GREEN FOR ACTIVE STEPS, ORANGE FOR EXCEPTIONS, GRAY FOR INACTIVE
-            const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
-            const lineStyle = isException ? 'bg-orange-400' : (isActive ? 'bg-green-500' : 'bg-gray-300');
-
-            return `
-                <div class="${containerClass}">
-                    <div class="timeline-dot ${dotStyle}"></div>
-                    <div class="timeline-line ${lineStyle}"></div>
-                    <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
-                        <span class="${labelClass} text-sm mr-4">${displayLabel}</span>
-                        <span class="${dateClass} text-sm text-right whitespace-nowrap">${dateText}</span>
-                    </div>
-                </div>
-            `;
-        }
-
-        /**
-         * Creates and returns an HTML string for a single application result card.
-         */
+        // Create result card
         function createResultCard(data) {
             const statusText = data['STATUS'] || 'Unknown';
-            // Sanitize status text for CSS class name AND fix the spaced-out text
             const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
             const displayStatus = fixSpacedOutText(statusText);
             
-            // Display the FULL NAME
             const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
                 <i class="fas fa-id-card mr-3 text-blue-500"></i>${data['FULL NAME']}
             </h3>` : '';
 
-            // Helper function to check if a date field has a valid value
-            const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
-            
-            // --- Timeline Steps Definition ---
-            const timelineEvents = [
-                { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
-                { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
-                { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
-                { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
-            ];
-
-            // --- Exception Steps ---
-            const exceptionEvents = [
-                { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
-                { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
-                { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
-            ];
-
+            // Timeline
             let timelineHtml = '';
-            let activeException = null;
+            const steps = [
+                { label: 'Application Received', key: 'DATE RECEIVED' },
+                { label: 'Document Review (PRBS)', key: 'DATE REVIEW' },
+                { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA' },
+                { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM' }
+            ];
+            
             let lastActiveIndex = -1;
-
-            // 1. Check for Active Exception
-            for (const event of exceptionEvents) {
-                if (isStatusActive(event.key)) {
-                    activeException = event;
-                    break;
+            steps.forEach((step, index) => {
+                if (data[step.key] && data[step.key] !== 'N/A') {
+                    lastActiveIndex = index;
                 }
-            }
-
-            // 2. Determine the last active sequential step if no exception is active
-            if (!activeException) {
-                for (let i = timelineEvents.length - 1; i >= 0; i--) {
-                    if (isStatusActive(timelineEvents[i].key)) {
-                        lastActiveIndex = i;
-                        break;
-                    }
+            });
+            
+            steps.forEach((step, index) => {
+                const date = data[step.key] || 'N/A';
+                if (date !== 'N/A' || index === 0) {
+                    const isActive = index === lastActiveIndex;
+                    timelineHtml += `
+                        <div class="timeline-step ${isActive ? 'active' : ''}">
+                            <div class="timeline-dot ${isActive ? 'bg-green-500' : 'bg-gray-400'}"></div>
+                            <div class="timeline-line ${isActive ? 'bg-green-500' : 'bg-gray-300'}"></div>
+                            <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
+                                <span class="${isActive ? 'text-gray-700 font-medium' : 'text-gray-500'} text-sm mr-4">${step.label}</span>
+                                <span class="${isActive ? 'font-semibold text-gray-800' : 'text-gray-500'} text-sm text-right whitespace-nowrap">${date}</span>
+                            </div>
+                        </div>
+                    `;
                 }
-            }
-
-            // 3. Render the timeline
-            if (activeException) {
-                const preliminarySteps = timelineEvents.slice(0, 2); 
-                
-                preliminarySteps.forEach((event) => {
-                    const dateText = data[event.key] || 'N/A';
-                    const isActive = isStatusActive(event.key);
-                    const isLastActive = false; 
-                    if(isActive) {
-                        timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
-                    } else if (event.key === 'DATE RECEIVED') {
-                        if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
-                    }
-                });
-
-                const dateText = data[activeException.key];
-                timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
-                
-                timelineHtml += `
-                    <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
-                        <i class="fas fa-exclamation-circle mr-2"></i>
-                        <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
-                    </div>
-                `;
-
-            } else {
-                timelineEvents.forEach((event, index) => {
-                    const dateText = data[event.key] || 'N/A';
-                    const isActive = isStatusActive(event.key);
-                    const isCurrent = (index === lastActiveIndex);
-                    
-                    if (isActive || index <= lastActiveIndex) {
-                        timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
-                    }
-                });
-            }
-
-            // Add Optional Retirement Order section with Authority and Authority Date
-            const optionalOrderSection = `
-                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
-                    <h4 class="font-semibold text-green-800 mb-4 flex items-center">
-                        <i class="fas fa-file-contract mr-2"></i>
-                        Optional Retirement Order
-                    </h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                            <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-gavel mr-2 text-green-500"></i>
-                                Authority:
-                            </span>
-                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY'] || 'N/A'}</span>
-                        </div>
-                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                            <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-calendar-check mr-2 text-green-500"></i>
-                                Authority Date:
-                            </span>
-                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
-                        </div>
-                    </div>
-                </div>
-            `;
+            });
 
             return `
                 <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
@@ -557,32 +269,32 @@
                                     <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
                                     Effectivity Date:
                                 </span>
-                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
+                                <span class="text-gray-900 font-semibold">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
                                     <i class="fas fa-tasks mr-2 text-blue-500"></i>
                                     Current Status:
                                 </span>
-                                <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
+                                <span class="status-pill status-${statusClass}">${displayStatus}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
                                     <i class="fas fa-user-shield mr-2 text-blue-500"></i>
                                     Rank:
                                 </span>
-                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
+                                <span class="text-gray-900 font-semibold">${data['RANK'] || 'N/A'}</span>
                             </div>
                             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                                 <span class="text-gray-600 font-medium flex items-center">
                                     <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
                                     Unit/Region:
                                 </span>
-                                <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
+                                <span class="text-gray-900 font-semibold">${data['UNIT/REGION'] || 'N/A'}</span>
                             </div>
                         </div>
                         
-                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
+                        <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl border border-blue-200">
                             <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
                                 <i class="fas fa-project-diagram mr-2"></i>
                                 Application Progress Timeline
@@ -591,60 +303,82 @@
                                 ${timelineHtml}
                             </div>
                         </div>
-                        ${optionalOrderSection}
+                        
+                        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl border border-green-200">
+                            <h4 class="font-semibold text-green-800 mb-4 flex items-center">
+                                <i class="fas fa-file-contract mr-2"></i>
+                                Optional Retirement Order
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                                    <span class="text-gray-600 font-medium flex items-center">
+                                        <i class="fas fa-hashtag mr-2 text-green-500"></i>
+                                        Order Number:
+                                    </span>
+                                    <span class="text-gray-900 font-semibold">${data['ORDER NUMBER'] || 'N/A'}</span>
+                                </div>
+                                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                                    <span class="text-gray-600 font-medium flex items-center">
+                                        <i class="fas fa-calendar-check mr-2 text-green-500"></i>
+                                        Authority Date:
+                                    </span>
+                                    <span class="text-gray-900 font-semibold">${data['AUTHORITY DATE'] || 'N/A'}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
         }
 
-        // --- FORM HANDLING LOGIC ---
+        // Handle form submission
         searchForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            resultsArea.classList.add('hidden');
-            resultsContainer.innerHTML = '';
-
+            
             const lastName = document.getElementById('lastNameInput').value.trim();
             const firstName = document.getElementById('firstNameInput').value.trim();
             const middleName = document.getElementById('middleNameInput').value.trim();
             const birthday = document.getElementById('birthdayInput').value;
 
             if (!lastName || !firstName || !birthday) {
-                showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
+                showMessage('Missing Information', 'Please fill in all required fields.');
                 return;
             }
             
+            // Show loading
             buttonText.textContent = 'Searching...';
             loadingSpinner.classList.remove('hidden');
             searchButton.disabled = true;
+            resultsArea.classList.add('hidden');
+            resultsContainer.innerHTML = '';
 
             try {
-                const params = new URLSearchParams({
-                    ln: lastName,
-                    fn: firstName,
-                    bd: birthday,
-                    mn: middleName || ''
-                });
-
-                console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
+                // Build URL with parameters
+                const url = `${GAS_WEB_APP_URL}?ln=${encodeURIComponent(lastName)}&fn=${encodeURIComponent(firstName)}&bd=${encodeURIComponent(birthday)}&mn=${encodeURIComponent(middleName)}`;
+                console.log('Making request to:', url);
                 
-                const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
+                const response = await fetch(url);
                 const result = await response.json();
-                console.log('Response from server:', result);
+                
+                console.log('Server response:', result);
                 
                 if (result.status === 'success') {
-                    displayResults(result.data, result.message);
+                    // Display results
+                    resultsContainer.innerHTML = '';
+                    result.data.forEach(data => {
+                        const cardHtml = createResultCard(data);
+                        resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
+                    });
+                    matchMessage.textContent = result.message;
+                    matchMessage.classList.remove('hidden');
+                    resultsArea.classList.remove('hidden');
                 } else {
-                    showMessage('Application Not Found', result.message, 'info');
+                    showMessage('Application Not Found', result.message);
                 }
                 
             } catch (error) {
                 console.error('Error:', error);
-                showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
+                showMessage('Connection Error', 'Please check your internet connection and try again.');
             } finally {
                 buttonText.textContent = 'Search Application';
                 loadingSpinner.classList.add('hidden');
@@ -652,44 +386,18 @@
             }
         });
 
-        /**
-         * Clears previous results and displays new results in the DOM.
-         */
-        function displayResults(results, message) {
-            resultsContainer.innerHTML = '';
-            if (results && results.length > 0) {
-                results.forEach((data) => {
-                    const cardHtml = createResultCard(data);
-                    resultsContainer.insertAdjacentHTML('beforeend', cardHtml);
-                });
-                
-                resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500"></i>Latest Application Status`;
-
-                matchMessage.textContent = message;
-                matchMessage.classList.remove('hidden');
-                resultsArea.classList.remove('hidden');
-            } else {
-                showMessage('No Results', 'No application data was returned from the server.', 'info');
-            }
-        }
-
-        clearButton.addEventListener('click', function() {
+        // Clear form
+        document.getElementById('clearButton').addEventListener('click', function() {
             searchForm.reset();
             resultsArea.classList.add('hidden');
-            resultsContainer.innerHTML = '';
             matchMessage.classList.add('hidden');
-            document.getElementById('lastNameInput').focus();
         });
 
-        // --- PAGE INITIALIZATION ---
+        // Set max date for birthday
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('lastNameInput').focus();
-            
-            // Set max date for birthday to today
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('birthdayInput').max = today;
-            
-            console.log('Application loaded. GAS Web App URL:', GAS_WEB_APP_URL);
+            console.log('App loaded. Web app URL:', GAS_WEB_APP_URL);
         });
     </script>
 </body>
