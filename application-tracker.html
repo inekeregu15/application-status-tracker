@@ -269,7 +269,7 @@
 
     <script>
         // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzHy1xVnE7SjqBBZP9mZ9nvvBVO6ZodkCxnUE_JYuzuxbwEMPRHt9ZRlNeboMKZN1kV/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzHAuvp_uBH90UUcwQlUN8GYJdqWng4DMcTtqgWB08SWynoviMnhm_gr8RAMtDSCyUk/exec";
 
         // DOM ELEMENT REFERENCES
         const searchForm = document.getElementById('searchForm');
@@ -318,6 +318,11 @@
                 fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull out of Application');
             }
             
+            // Handle "withoptionalorder" -> "With OPTIONAL ORDER"
+            if (text.toLowerCase().includes('withoptionalorder')) {
+                fixedText = text.toLowerCase().replace('withoptionalorder', 'With OPTIONAL ORDER');
+            }
+            
             // Remove extra spaces between letters and normalize
             fixedText = fixedText.replace(/\s+/g, ' ').trim();
             
@@ -337,6 +342,11 @@
             // Ensure "to" is lowercase in current status
             if (formattedText.includes('Forwarded To')) {
                 formattedText = formattedText.replace('Forwarded To', 'Forwarded to');
+            }
+            
+            // Special case for "With OPTIONAL ORDER" - make "OPTIONAL ORDER" all caps
+            if (formattedText.includes('With Optional Order')) {
+                formattedText = formattedText.replace('With Optional Order', 'With OPTIONAL ORDER');
             }
             
             return formattedText;
@@ -391,9 +401,9 @@
             // Use the label directly since timeline labels are already properly formatted
             const displayLabel = label;
             
-            // KEEP GREEN FOR ACTIVE STEPS, ORANGE FOR EXCEPTIONS, GRAY FOR INACTIVE
-            const dotStyle = isException ? 'bg-orange-400 border-2 border-orange-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
-            const lineStyle = isException ? 'bg-orange-400' : (isActive ? 'bg-green-500' : 'bg-gray-300');
+            // GREEN FOR ACTIVE STEPS, RED FOR EXCEPTIONS, GRAY FOR INACTIVE
+            const dotStyle = isException ? 'bg-red-500 border-2 border-red-700' : (isActive ? 'bg-green-500' : 'bg-gray-400');
+            const lineStyle = isException ? 'bg-red-500' : (isActive ? 'bg-green-500' : 'bg-gray-300');
 
             return `
                 <div class="${containerClass}">
@@ -429,7 +439,8 @@
                 { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
                 { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
                 { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
-                { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false }
+                { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
+                { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false } // NEW: Added Optional Order step
             ];
 
             // --- Exception Steps ---
