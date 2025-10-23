@@ -272,7 +272,7 @@
 
     <script>
         // --- CONFIGURATION ---
-        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbx4okArElPR7SRNZTRe_Pf3dcmc9ArppVMj06LealAeMJB5UYNvYq-YlhSEy9cPZ6Fb/exec";
+        const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwVmPcgwPu_A5oaact8vHYpF8CBuyw7NotFZwWx-y57lzNOVnfSc4wehKdJY75vz_z8/exec";
 
         // --- DOM ELEMENT REFERENCES ---
         const searchForm = document.getElementById('searchForm');
@@ -521,13 +521,31 @@
                 });
             }
 
-            // Add PAIS Account note only when status is "Forwarded to NAPOLCOM"
-            const paisNote = statusText.toLowerCase().includes('forwardedtonapolcom') || 
-                           statusText.toLowerCase().includes('forwarded to napolcom') ? 
-                `<div class="mt-4 p-3 bg-green-50 text-green-800 border border-green-200 rounded-lg text-sm font-medium">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <span class="font-bold">NOTE:</span> All Optional Order will be posted at your respective PAIS Account.
-                </div>` : '';
+            // Add Optional Order section with Authority and Authority Date
+            const optionalOrderSection = (data['AUTHORITY'] || data['AUTHORITY DATE']) ? `
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
+                    <h4 class="font-semibold text-green-800 mb-4 flex items-center">
+                        <i class="fas fa-file-contract mr-2"></i>
+                        Optional Order
+                    </h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-gavel mr-2 text-green-500"></i>
+                                Authority:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY'] || 'N/A'}</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-calendar-check mr-2 text-green-500"></i>
+                                Authority Date:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
+                        </div>
+                    </div>
+                </div>
+            ` : '';
 
             return `
                 <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
@@ -573,7 +591,7 @@
                                 ${timelineHtml}
                             </div>
                         </div>
-                        ${paisNote}
+                        ${optionalOrderSection}
                     </div>
                 </div>
             `;
