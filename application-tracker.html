@@ -131,106 +131,129 @@
         .search-button:hover {
             background-color: #067a4a;
         }
+        
+        /* New: Focus styles for accessibility */
+        .focus-visible:focus {
+            outline: 2px solid #079C5E;
+            outline-offset: 2px;
+        }
+        
+        /* New: Improved mobile responsiveness */
+        @media (max-width: 640px) {
+            .mobile-stack {
+                flex-direction: column;
+            }
+            .mobile-stack > * {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen py-8 px-4">
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
-        <div class="text-center mb-8">
-            <div class="gradient-header text-white py-8 px-6 rounded-2xl shadow-lg mb-6">
+        <header class="text-center mb-8">
+            <div class="gradient-header text-white py-8 px-6 rounded-2xl shadow-lg mb-6" role="banner">
                 <h1 class="text-3xl md:text-4xl font-bold mb-2 flex items-center justify-center">
-                    <i class="fas fa-search-location mr-4 text-white"></i>
+                    <i class="fas fa-search-location mr-4 text-white" aria-hidden="true"></i>
                     Optional Application Status
                 </h1>
                 <p class="text-white text-lg opacity-90">Track your optional retirement application status</p>
             </div>
-        </div>
+        </header>
 
         <!-- Search Form -->
-        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 card">
-            <form id="searchForm" class="space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="lastNameInput" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-500"></i>Last Name *
-                        </label>
-                        <input type="text" id="lastNameInput" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                               placeholder="Enter last name" required>
-                    </div>
-                    
-                    <div>
-                        <label for="firstNameInput" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-500"></i>First Name *
-                        </label>
-                        <input type="text" id="firstNameInput" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                               placeholder="Enter first name" required>
-                    </div>
-                    
-                    <div>
-                        <label for="middleNameInput" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-user mr-2 text-blue-500"></i>Middle Name
-                        </label>
-                        <input type="text" id="middleNameInput" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                               placeholder="Enter middle name (optional)">
-                    </div>
-                    
-                    <div>
-                        <label for="birthdayInput" class="block text-sm font-medium text-gray-700 mb-2">
-                            <i class="fas fa-calendar-alt mr-2 text-blue-500"></i>Birthday *
-                        </label>
-                        <input type="date" id="birthdayInput" 
-                               class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
-                               required>
-                    </div>
-                </div>
-                
-                <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                    <!-- Clear Form Button - Half size on the left -->
-                    <button type="button" id="clearButton" 
-                            class="w-full sm:w-1/2 bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl">
-                        <i class="fas fa-eraser mr-2"></i>Clear Form
-                    </button>
-                    
-                    <!-- Search Button - Custom 079C5E color -->
-                    <button type="submit" id="searchButton" 
-                            class="w-full sm:w-full search-button py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105">
-                        <span id="buttonText">Search Application</span>
-                        <div id="loadingSpinner" class="hidden ml-2">
-                            <i class="fas fa-spinner fa-spin text-white"></i>
+        <main>
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-8 card">
+                <form id="searchForm" class="space-y-6" aria-label="Search application status">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="lastNameInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-blue-500" aria-hidden="true"></i>Last Name *
+                            </label>
+                            <input type="text" id="lastNameInput" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 focus-visible"
+                                   placeholder="Enter last name" required
+                                   aria-required="true">
                         </div>
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Results Area -->
-        <div id="resultsArea" class="hidden">
-            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
-                <h2 id="resultsHeader" class="text-2xl font-bold text-gray-800 mb-4"></h2>
-                <p id="matchMessage" class="text-gray-600 mb-6"></p>
-                <div id="resultsContainer" class="space-y-6"></div>
+                        
+                        <div>
+                            <label for="firstNameInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-blue-500" aria-hidden="true"></i>First Name *
+                            </label>
+                            <input type="text" id="firstNameInput" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 focus-visible"
+                                   placeholder="Enter first name" required
+                                   aria-required="true">
+                        </div>
+                        
+                        <div>
+                            <label for="middleNameInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-blue-500" aria-hidden="true"></i>Middle Name
+                            </label>
+                            <input type="text" id="middleNameInput" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 focus-visible"
+                                   placeholder="Enter middle name (optional)">
+                        </div>
+                        
+                        <div>
+                            <label for="birthdayInput" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-calendar-alt mr-2 text-blue-500" aria-hidden="true"></i>Birthday *
+                            </label>
+                            <input type="date" id="birthdayInput" 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 focus-visible"
+                                   required
+                                   aria-required="true">
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-col sm:flex-row gap-4 pt-4 mobile-stack">
+                        <!-- Clear Form Button - Half size on the left -->
+                        <button type="button" id="clearButton" 
+                                class="bg-gray-500 hover:bg-gray-600 text-white py-3 px-6 rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl focus-visible"
+                                aria-label="Clear form fields">
+                            <i class="fas fa-eraser mr-2" aria-hidden="true"></i>Clear Form
+                        </button>
+                        
+                        <!-- Search Button - Custom 079C5E color -->
+                        <button type="submit" id="searchButton" 
+                                class="search-button py-3 px-6 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center shadow-lg hover:shadow-xl transform hover:scale-105 focus-visible"
+                                aria-label="Search application status">
+                            <span id="buttonText">Search Application</span>
+                            <div id="loadingSpinner" class="hidden ml-2" aria-hidden="true">
+                                <i class="fas fa-spinner fa-spin text-white"></i>
+                            </div>
+                        </button>
+                    </div>
+                </form>
             </div>
-        </div>
+
+            <!-- Results Area -->
+            <div id="resultsArea" class="hidden" aria-live="polite">
+                <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                    <h2 id="resultsHeader" class="text-2xl font-bold text-gray-800 mb-4"></h2>
+                    <p id="matchMessage" class="text-gray-600 mb-6"></p>
+                    <div id="resultsContainer" class="space-y-6"></div>
+                </div>
+            </div>
+        </main>
 
         <!-- Footer -->
-        <div class="text-center text-gray-500 text-sm mt-12">
+        <footer class="text-center text-gray-500 text-sm mt-12">
             <p>PNP Retirement and Benefits Administration Service - Application Tracking System</p>
-        </div>
+        </footer>
     </div>
 
     <!-- Modal Dialog -->
-    <div id="messageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div id="messageModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-describedby="modalMessage">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 transform scale-95">
             <div class="text-center">
                 <div id="modalIcon" class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
-                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl" aria-hidden="true"></i>
                 </div>
                 <h3 id="modalTitle" class="text-lg font-semibold text-gray-900 mt-4">Title</h3>
                 <p id="modalMessage" class="text-gray-600 mt-2">Message</p>
-                <button id="closeModalButton" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-xl font-semibold transition-colors duration-200">
+                <button id="closeModalButton" class="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-xl font-semibold transition-colors duration-200 focus-visible">
                     OK
                 </button>
             </div>
@@ -239,7 +262,7 @@
 
 <script>
     // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycby-AJgzuFlQ2-IuahnXFHJ5_IBQb3zUqGpeqWxfbN1TzrwqVe4_arFSQqOMWxgjruYU/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxFojRRxQQeAwacb3DIdQ8gHkmT9OflN1A9cusQBkbdiqOgZjAKMECYI-wur469g73E/exec";
 
     // QUICK WIN: Add search cache
     const SEARCH_CACHE = new Map();
@@ -352,31 +375,43 @@
         switch (type) {
             case 'success':
                 iconClass = 'bg-green-100';
-                iconSvg = `<i class="fas fa-check text-green-600 text-xl"></i>`;
+                iconSvg = `<i class="fas fa-check text-green-600 text-xl" aria-hidden="true"></i>`;
                 break;
             case 'info':
                 iconClass = 'bg-blue-100';
-                iconSvg = `<i class="fas fa-info text-blue-600 text-xl"></i>`;
+                iconSvg = `<i class="fas fa-info text-blue-600 text-xl" aria-hidden="true"></i>`;
                 break;
             default: // error
                 iconClass = 'bg-red-100';
-                iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>`;
+                iconSvg = `<i class="fas fa-exclamation-triangle text-red-600 text-xl" aria-hidden="true"></i>`;
         }
 
         modalIcon.className = `mx-auto flex items-center justify-center h-12 w-12 rounded-full ${iconClass}`;
         modalIcon.innerHTML = iconSvg;
         modal.classList.remove('hidden');
         setTimeout(() => modal.querySelector('div').classList.remove('scale-95'), 10);
+        
+        // Set focus to the modal for accessibility
+        document.getElementById('closeModalButton').focus();
     }
 
     function hideModal() {
         modal.querySelector('div').classList.add('scale-95');
         setTimeout(() => modal.classList.add('hidden'), 300);
+        // Return focus to the search button after modal closes
+        searchButton.focus();
     }
 
     closeModalButton.addEventListener('click', hideModal);
     modal.addEventListener('click', (event) => {
         if (event.target === modal) hideModal();
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+            hideModal();
+        }
     });
     
     /**
@@ -417,7 +452,7 @@
         
         // Display the FULL NAME
         const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-            <i class="fas fa-id-card mr-3 text-blue-500"></i>${data['FULL NAME']}
+            <i class="fas fa-id-card mr-3 text-blue-500" aria-hidden="true"></i>${data['FULL NAME']}
         </h3>` : '';
 
         // Helper function to check if a date field has a valid value
@@ -481,7 +516,7 @@
             
             timelineHtml += `
                 <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
                     <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                 </div>
             `;
@@ -503,20 +538,20 @@
         const optionalOrderSection = showOptionalOrderSection ? `
             <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
                 <h4 class="font-semibold text-green-800 mb-4 flex items-center">
-                    <i class="fas fa-file-contract mr-2"></i>
+                    <i class="fas fa-file-contract mr-2" aria-hidden="true"></i>
                     Optional Retirement Order
                 </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                         <span class="text-gray-600 font-medium flex items-center">
-                            <i class="fas fa-hashtag mr-2 text-green-500"></i>
+                            <i class="fas fa-hashtag mr-2 text-green-500" aria-hidden="true"></i>
                             Order Number:
                         </span>
                         <span class="text-gray-900 font-semibold text-left sm:text-right">${data['ORDER NUMBER'] || 'N/A'}</span>
                     </div>
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                         <span class="text-gray-600 font-medium flex items-center">
-                            <i class="fas fa-calendar-check mr-2 text-green-500"></i>
+                            <i class="fas fa-calendar-check mr-2 text-green-500" aria-hidden="true"></i>
                             Authority Date:
                         </span>
                         <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
@@ -526,34 +561,34 @@
         ` : '';
 
         return `
-            <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in">
+            <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in" aria-labelledby="result-title-${data['FULL NAME']?.replace(/\s+/g, '-')}">
                 ${fullName}
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                             <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-calendar-check mr-2 text-blue-500"></i>
+                                <i class="fas fa-calendar-check mr-2 text-blue-500" aria-hidden="true"></i>
                                 Effectivity Date:
                             </span>
                             <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                             <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-tasks mr-2 text-blue-500"></i>
+                                <i class="fas fa-tasks mr-2 text-blue-500" aria-hidden="true"></i>
                                 Current Status:
                             </span>
                             <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                             <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-user-shield mr-2 text-blue-500"></i>
+                                <i class="fas fa-user-shield mr-2 text-blue-500" aria-hidden="true"></i>
                                 Rank:
                             </span>
                             <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
                         </div>
                         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                             <span class="text-gray-600 font-medium flex items-center">
-                                <i class="fas fa-map-marker-alt mr-2 text-blue-500"></i>
+                                <i class="fas fa-map-marker-alt mr-2 text-blue-500" aria-hidden="true"></i>
                                 Unit/Region:
                             </span>
                             <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
@@ -562,7 +597,7 @@
                     
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
                         <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
-                            <i class="fas fa-project-diagram mr-2"></i>
+                            <i class="fas fa-project-diagram mr-2" aria-hidden="true"></i>
                             Application Progress Timeline
                         </h4>
                         <div class="relative pl-4 space-y-3">
@@ -607,6 +642,7 @@
         buttonText.textContent = 'Searching...';
         loadingSpinner.classList.remove('hidden');
         searchButton.disabled = true;
+        searchButton.setAttribute('aria-label', 'Searching application status');
 
         try {
             const params = new URLSearchParams({
@@ -618,7 +654,15 @@
 
             console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
             
-            const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`);
+            // Add timeout to prevent hanging requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+            
+            const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`, {
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
             
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
@@ -642,11 +686,16 @@
             
         } catch (error) {
             console.error('Error:', error);
-            showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
+            if (error.name === 'AbortError') {
+                showMessage('Request Timeout', 'The search took too long. Please try again.', 'error');
+            } else {
+                showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
+            }
         } finally {
             buttonText.textContent = 'Search Application';
             loadingSpinner.classList.add('hidden');
             searchButton.disabled = false;
+            searchButton.setAttribute('aria-label', 'Search application status');
             validateForm(); // Re-validate form state
         }
     });
@@ -660,24 +709,36 @@
             // QUICK WIN: Use more efficient DOM updating
             const fragment = document.createDocumentFragment();
             
-            results.forEach((data) => {
+            results.forEach((data, index) => {
                 const cardHtml = createResultCard(data);
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = cardHtml;
                 if (tempDiv.firstElementChild) {
+                    // Add an ID for accessibility
+                    tempDiv.firstElementChild.id = `result-${index}`;
                     fragment.appendChild(tempDiv.firstElementChild);
                 }
             });
             
             resultsContainer.appendChild(fragment);
             
-            resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500"></i>Latest Application Status`;
+            resultsHeader.innerHTML = `<i class="fas fa-file-alt mr-3 text-blue-500" aria-hidden="true"></i>Latest Application Status`;
             matchMessage.textContent = message;
             matchMessage.classList.remove('hidden');
             resultsArea.classList.remove('hidden');
             
             // QUICK WIN: Scroll to results smoothly
             resultsArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            
+            // Announce results to screen readers
+            const resultCount = results.length;
+            const announcement = document.createElement('div');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.className = 'sr-only';
+            announcement.textContent = `Found ${resultCount} application${resultCount > 1 ? 's' : ''}. ${message}`;
+            document.body.appendChild(announcement);
+            setTimeout(() => document.body.removeChild(announcement), 1000);
         } else {
             showMessage('No Results', 'No application data was returned from the server.', 'info');
         }
