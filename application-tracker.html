@@ -444,211 +444,280 @@
     /**
      * Creates and returns an HTML string for a single application result card.
      */
-function createResultCard(data) {
-    const statusText = data['STATUS'] || 'Unknown';
-    // Sanitize status text for CSS class name AND fix the spaced-out text
-    const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
-    const displayStatus = fixSpacedOutText(statusText);
-    
-    // Display the FULL NAME
-    const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
-        <i class="fas fa-id-card mr-3 text-blue-500" aria-hidden="true"></i>${data['FULL NAME']}
-    </h3>` : '';
+    function createResultCard(data) {
+        const statusText = data['STATUS'] || 'Unknown';
+        // Sanitize status text for CSS class name AND fix the spaced-out text
+        const statusClass = statusText.replace(/\s+/g, '').replace(/-/g, '').trim();
+        const displayStatus = fixSpacedOutText(statusText);
+        
+        // Display the FULL NAME
+        const fullName = data['FULL NAME'] ? `<h3 class="text-xl font-bold text-gray-900 mb-4 flex items-center">
+            <i class="fas fa-id-card mr-3 text-blue-500" aria-hidden="true"></i>${data['FULL NAME']}
+        </h3>` : '';
 
-    // Helper function to check if a date field has a valid value
-    const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
-    
-    // --- Timeline Steps Definition ---
-    const timelineEvents = [
-        { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
-        { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
-        { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
-        { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
-        { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false }
-    ];
+        // Helper function to check if a date field has a valid value
+        const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
+        
+        // --- Timeline Steps Definition ---
+        const timelineEvents = [
+            { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
+            { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
+            { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
+            { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
+            { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false } // NEW: Added Optional Order step
+        ];
 
-    // --- Exception Steps ---
-    const exceptionEvents = [
-        { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
-        { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
-        { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
-    ];
+        // --- Exception Steps ---
+        const exceptionEvents = [
+            { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
+            { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
+            { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
+        ];
 
-    let timelineHtml = '';
-    let activeException = null;
-    let lastActiveIndex = -1;
+        let timelineHtml = '';
+        let activeException = null;
+        let lastActiveIndex = -1;
 
-    // 1. Check for Active Exception - PRIORITIZE PULL-OUT STATUS
-    // If current status is Pull-out, show it as the active exception
-    if (displayStatus.toLowerCase().includes('pull-out')) {
-        activeException = exceptionEvents.find(event => event.key === 'PULL-OUT OF APPLICATION');
-    } else {
-        // Otherwise, check for other exceptions
+        // 1. Check for Active Exception
         for (const event of exceptionEvents) {
             if (isStatusActive(event.key)) {
                 activeException = event;
                 break;
             }
         }
-    }
 
-    // 2. Determine the last active sequential step if no exception is active
-    if (!activeException) {
-        for (let i = timelineEvents.length - 1; i >= 0; i--) {
-            if (isStatusActive(timelineEvents[i].key)) {
-                lastActiveIndex = i;
-                break;
+        // 2. Determine the last active sequential step if no exception is active
+        if (!activeException) {
+            for (let i = timelineEvents.length - 1; i >= 0; i--) {
+                if (isStatusActive(timelineEvents[i].key)) {
+                    lastActiveIndex = i;
+                    break;
+                }
             }
         }
-    }
 
-    // 3. Render the timeline
-    if (activeException) {
-        // Show all completed normal steps
-        timelineEvents.forEach((event) => {
-            const dateText = data[event.key] || 'N/A';
-            const isActive = isStatusActive(event.key);
+        // 3. Render the timeline
+        if (activeException) {
+            const preliminarySteps = timelineEvents.slice(0, 2); 
             
-            if (isActive) {
-                timelineHtml += createTimelineStep(event.label, dateText, false, false);
-            }
-        });
+            preliminarySteps.forEach((event) => {
+                const dateText = data[event.key] || 'N/A';
+                const isActive = isStatusActive(event.key);
+                const isLastActive = false; 
+                if(isActive) {
+                    timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
+                } else if (event.key === 'DATE RECEIVED') {
+                    if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
+                }
+            });
 
-        // Add the active exception step
-        const exceptionDate = data[activeException.key] || 'N/A';
-        timelineHtml += createTimelineStep(activeException.label, exceptionDate, true, true);
-        
-        // Special message for Pull-out status
-        if (activeException.key === 'PULL-OUT OF APPLICATION') {
-            timelineHtml += `
-                <div class="mt-4 p-3 bg-yellow-50 text-yellow-800 border border-yellow-200 rounded-lg text-sm font-medium">
-                    <i class="fas fa-exclamation-triangle mr-2" aria-hidden="true"></i>
-                    <span class="font-bold">NOTE:</span> Application has been pulled out. Please contact the administration for more details.
-                </div>
-            `;
-        } else {
+            const dateText = data[activeException.key];
+            timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
+            
             timelineHtml += `
                 <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
                     <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
                     <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                 </div>
             `;
+
+        } else {
+            timelineEvents.forEach((event, index) => {
+                const dateText = data[event.key] || 'N/A';
+                const isActive = isStatusActive(event.key);
+                const isCurrent = (index === lastActiveIndex);
+                
+                if (isActive || index <= lastActiveIndex) {
+                    timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
+                }
+            });
         }
 
-    } else {
-        // Normal timeline progression
-        timelineEvents.forEach((event, index) => {
-            const dateText = data[event.key] || 'N/A';
-            const isActive = isStatusActive(event.key);
-            const isCurrent = (index === lastActiveIndex);
-            
-            if (isActive || index <= lastActiveIndex) {
-                timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false);
-            }
-        });
-    }
-
-    // Add Optional Retirement Order section ONLY when status is "With OPTIONAL ORDER"
-    const showOptionalOrderSection = displayStatus.toUpperCase().includes('WITH OPTIONAL ORDER');
-    const optionalOrderSection = showOptionalOrderSection ? `
-        <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
-            <h4 class="font-semibold text-green-800 mb-4 flex items-center">
-                <i class="fas fa-file-contract mr-2" aria-hidden="true"></i>
-                Optional Retirement Order
-            </h4>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                    <span class="text-gray-600 font-medium flex items-center">
-                        <i class="fas fa-hashtag mr-2 text-green-500" aria-hidden="true"></i>
-                        Order Number:
-                    </span>
-                    <span class="text-gray-900 font-semibold text-left sm:text-right">${data['ORDER NUMBER'] || 'N/A'}</span>
-                </div>
-                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                    <span class="text-gray-600 font-medium flex items-center">
-                        <i class="fas fa-calendar-check mr-2 text-green-500" aria-hidden="true"></i>
-                        Authority Date:
-                    </span>
-                    <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
-                </div>
-            </div>
-        </div>
-    ` : '';
-
-    return `
-        <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in" aria-labelledby="result-title-${data['FULL NAME']?.replace(/\s+/g, '-')}">
-            ${fullName}
-            <div class="space-y-4">
+        // Add Optional Retirement Order section ONLY when status is "With OPTIONAL ORDER"
+        const showOptionalOrderSection = displayStatus.toUpperCase().includes('WITH OPTIONAL ORDER');
+        const optionalOrderSection = showOptionalOrderSection ? `
+            <div class="bg-gradient-to-br from-green-50 to-emerald-50 p-4 rounded-2xl mt-4 border border-green-200">
+                <h4 class="font-semibold text-green-800 mb-4 flex items-center">
+                    <i class="fas fa-file-contract mr-2" aria-hidden="true"></i>
+                    Optional Retirement Order
+                </h4>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                         <span class="text-gray-600 font-medium flex items-center">
-                            <i class="fas fa-calendar-check mr-2 text-blue-500" aria-hidden="true"></i>
-                            Effectivity Date:
+                            <i class="fas fa-hashtag mr-2 text-green-500" aria-hidden="true"></i>
+                            Order Number:
                         </span>
-                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
+                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['ORDER NUMBER'] || 'N/A'}</span>
                     </div>
                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
                         <span class="text-gray-600 font-medium flex items-center">
-                            <i class="fas fa-tasks mr-2 text-blue-500" aria-hidden="true"></i>
-                            Current Status:
+                            <i class="fas fa-calendar-check mr-2 text-green-500" aria-hidden="true"></i>
+                            Authority Date:
                         </span>
-                        <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium flex items-center">
-                            <i class="fas fa-user-shield mr-2 text-blue-500" aria-hidden="true"></i>
-                            Rank:
-                        </span>
-                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
-                        <span class="text-gray-600 font-medium flex items-center">
-                            <i class="fas fa-map-marker-alt mr-2 text-blue-500" aria-hidden="true"></i>
-                            Unit/Region:
-                        </span>
-                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
+                        <span class="text-gray-900 font-semibold text-left sm:text-right">${data['AUTHORITY DATE'] || 'N/A'}</span>
                     </div>
                 </div>
+            </div>
+        ` : '';
+
+        return `
+            <div class="bg-white p-6 rounded-2xl border-t-4 border-blue-600 shadow-md fade-in" aria-labelledby="result-title-${data['FULL NAME']?.replace(/\s+/g, '-')}">
+                ${fullName}
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-calendar-check mr-2 text-blue-500" aria-hidden="true"></i>
+                                Effectivity Date:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['EFFECTIVITY DATE'] || 'N/A'}</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-tasks mr-2 text-blue-500" aria-hidden="true"></i>
+                                Current Status:
+                            </span>
+                            <span><span class="status-pill status-${statusClass}">${displayStatus}</span></span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-user-shield mr-2 text-blue-500" aria-hidden="true"></i>
+                                Rank:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['RANK'] || 'N/A'}</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-2">
+                            <span class="text-gray-600 font-medium flex items-center">
+                                <i class="fas fa-map-marker-alt mr-2 text-blue-500" aria-hidden="true"></i>
+                                Unit/Region:
+                            </span>
+                            <span class="text-gray-900 font-semibold text-left sm:text-right">${data['UNIT/REGION'] || 'N/A'}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
+                        <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
+                            <i class="fas fa-project-diagram mr-2" aria-hidden="true"></i>
+                            Application Progress Timeline
+                        </h4>
+                        <div class="relative pl-4 space-y-3">
+                            ${timelineHtml}
+                        </div>
+                    </div>
+                    ${optionalOrderSection}
+                </div>
+            </div>
+        `;
+    }
+
+    // --- FORM HANDLING LOGIC (OPTIMIZED) ---
+    searchForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const lastName = document.getElementById('lastNameInput').value.trim();
+        const firstName = document.getElementById('firstNameInput').value.trim();
+        const middleName = document.getElementById('middleNameInput').value.trim();
+        const birthday = document.getElementById('birthdayInput').value;
+
+        if (!lastName || !firstName || !birthday) {
+            showMessage('Missing Information', 'Please fill in all required fields:\nLast Name, First Name, and Birthday.', 'error');
+            return;
+        }
+        
+        // QUICK WIN: Check cache first before making API call
+        const cacheKey = `${lastName}-${firstName}-${middleName}-${birthday}`;
+        const cachedResult = SEARCH_CACHE.get(cacheKey);
+        
+        if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_DURATION) {
+            // Serve from cache - instant response!
+            displayResults(cachedResult.data, cachedResult.message);
+            showMessage('Fast Results', 'Results loaded from cache instantly!', 'success');
+            return;
+        }
+        
+        // If not in cache, proceed with API call
+        resultsArea.classList.add('hidden');
+        resultsContainer.innerHTML = '';
+        
+        buttonText.textContent = 'Searching...';
+        loadingSpinner.classList.remove('hidden');
+        searchButton.disabled = true;
+        searchButton.setAttribute('aria-label', 'Searching application status');
+
+        try {
+            const params = new URLSearchParams({
+                ln: lastName,
+                fn: firstName,
+                bd: birthday,
+                mn: middleName || ''
+            });
+
+            console.log('Making request to:', `${GAS_WEB_APP_URL}?${params.toString()}`);
+            
+            // Add timeout to prevent hanging requests
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+            
+            const response = await fetch(`${GAS_WEB_APP_URL}?${params.toString()}`, {
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Response from server:', result);
+            
+            if (result.status === 'success') {
+                // QUICK WIN: Cache successful results
+                SEARCH_CACHE.set(cacheKey, {
+                    data: result.data,
+                    message: result.message,
+                    timestamp: Date.now()
+                });
                 
-                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
-                    <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
-                        <i class="fas fa-project-diagram mr-2" aria-hidden="true"></i>
-                        Application Progress Timeline
-                    </h4>
-                    <div class="relative pl-4 space-y-3">
-                        ${timelineHtml}
-                    </div>
-                </div>
-                ${optionalOrderSection}
-            </div>
-        </div>
-    `;
-}
+                displayResults(result.data, result.message);
+            } else {
+                showMessage('Application Not Found', result.message, 'info');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            if (error.name === 'AbortError') {
+                showMessage('Request Timeout', 'The search took too long. Please try again.', 'error');
+            } else {
+                showMessage('Connection Error', `An error occurred while searching: ${error.message}\n\nPlease check your internet connection and try again.`, 'error');
+            }
+        } finally {
+            buttonText.textContent = 'Search Application';
+            loadingSpinner.classList.add('hidden');
+            searchButton.disabled = false;
+            searchButton.setAttribute('aria-label', 'Search application status');
+            validateForm(); // Re-validate form state
+        }
+    });
 
-// Also update the createTimelineStep function to remove the isLastActive parameter
-function createTimelineStep(label, dateText, isActive, isException) {
-    const containerClass = `timeline-step ${isActive ? 'active' : ''} ${isException ? 'exception' : ''}`;
-    const dateClass = isActive || isException ? 'font-semibold text-gray-800' : 'text-gray-500';
-    const labelClass = isException ? 'text-orange-600 font-bold' : (isActive ? 'text-gray-700 font-medium' : 'text-gray-500');
-    
-    // Use the label directly since timeline labels are already properly formatted
-    const displayLabel = label;
-    
-    // GREEN FOR ALL STEPS, RED FOR EXCEPTIONS ONLY (NO GRAY)
-    const dotStyle = isException ? 'bg-red-500 border-2 border-red-700' : 'bg-green-500';
-    const lineStyle = isException ? 'bg-red-500' : 'bg-green-500';
-
-    return `
-        <div class="${containerClass}">
-            <div class="timeline-dot ${dotStyle}"></div>
-            <div class="timeline-line ${lineStyle}"></div>
-            <div class="flex flex-col sm:flex-row justify-between items-start pt-0.5">
-                <span class="${labelClass} text-sm mr-4">${displayLabel}</span>
-                <span class="${dateClass} text-sm text-right whitespace-nowrap">${dateText}</span>
-            </div>
-        </div>
-    `;
-}
+    /**
+     * Clears previous results and displays new results in the DOM.
+     */
+    function displayResults(results, message) {
+        resultsContainer.innerHTML = '';
+        if (results && results.length > 0) {
+            // QUICK WIN: Use more efficient DOM updating
+            const fragment = document.createDocumentFragment();
+            
+            results.forEach((data, index) => {
+                const cardHtml = createResultCard(data);
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHtml;
+                if (tempDiv.firstElementChild) {
+                    // Add an ID for accessibility
+                    tempDiv.firstElementChild.id = `result-${index}`;
+                    fragment.appendChild(tempDiv.firstElementChild);
+                }
             });
             
             resultsContainer.appendChild(fragment);
