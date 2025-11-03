@@ -14,8 +14,9 @@
             :root { font-family: 'Inter var', sans-serif; }
         }
         body {
-            background: linear-gradient(135deg, #f0f4f8 0%, #e0e7ff 100%);
+            background: linear-gradient(135deg, #e0f7fa 0%, #bbdefb 25%, #c8e6c9 50%, #fff9c4 75%, #ffccbc 100%);
             min-height: 100vh;
+            background-attachment: fixed;
         }
         .card {
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -41,7 +42,7 @@
         .status-Denied { background-color: #fee2e2; color: #991b1b; }
         .status-OnHold { background-color: #f3e8ff; color: #7e22ce; }
         .status-ReturnedwithDiscrepancy { background-color: #fef3c7; color: #d97706; }
-        .status-PullOutofApplication { background-color: #fef3c7; color: #d97706; }
+        .status-PullOutofApplication { background-color: #fee2e2; color: #991b1b; }
         .status-ForwardedtoNapolcom, .status-ForwardedtoTDCA { 
             background-color: #d1fae5; color: #065f46; 
         }
@@ -114,7 +115,7 @@
         }
         
         .gradient-header {
-            background: #079C5E; /* Changed to solid 079C5E color */
+            background: linear-gradient(135deg, #079C5E 0%, #0a7c4d 100%);
         }
         .gradient-success {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
@@ -147,9 +148,29 @@
                 width: 100%;
             }
         }
+
+        /* New: Animated background elements */
+        .bg-bubble {
+            position: fixed;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            z-index: -1;
+            animation: float 20s infinite linear;
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(-1000px) rotate(720deg); }
+        }
     </style>
 </head>
 <body class="min-h-screen py-8 px-4">
+    <!-- Animated Background Elements -->
+    <div class="bg-bubble" style="width: 80px; height: 80px; top: 10%; left: 10%;"></div>
+    <div class="bg-bubble" style="width: 120px; height: 120px; top: 20%; right: 15%; animation-delay: -5s;"></div>
+    <div class="bg-bubble" style="width: 60px; height: 60px; bottom: 20%; left: 20%; animation-delay: -10s;"></div>
+    <div class="bg-bubble" style="width: 100px; height: 100px; bottom: 10%; right: 10%; animation-delay: -15s;"></div>
+    
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <header class="text-center mb-8">
@@ -262,7 +283,7 @@
 
 <script>
     // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxAU-qQNpHsEt3g88fmeYfbqLaG6B90DH5hKLKrquRTjUy1mwfX52XMQAWTEOVuyDEW/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzmSTlpd0UdE83ZFEdXKndtjkmOVq_cogrugA-H0GTBmN0JQVNa1M5ybxpNVeTQpixH/exec";
 
     // QUICK WIN: Add search cache
     const SEARCH_CACHE = new Map();
@@ -325,9 +346,9 @@
             fixedText = text.toLowerCase().replace('onhold', 'On Hold');
         }
         
-        // Handle "pulloutofapplication" -> "Pull out of Application"
+        // Handle "pulloutofapplication" -> "Pull-out of Application"
         if (text.toLowerCase().includes('pulloutofapplication')) {
-            fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull out of Application');
+            fixedText = text.toLowerCase().replace('pulloutofapplication', 'Pull-out of Application');
         }
         
         // Handle "withoptionalorder" -> "With OPTIONAL ORDER"
@@ -471,7 +492,7 @@
         const exceptionEvents = [
             { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
             { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
-            { label: 'Pull-Out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
+            { label: 'Pull-out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
         ];
 
         let timelineHtml = '';
@@ -514,11 +535,26 @@
             const dateText = data[activeException.key];
             timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
             
+            // Add remarks section for red statuses only
+            let remarksHtml = '';
+            if (activeException.key === 'RETURNED WITH DISCREPANCY' && data['REMARKS']) {
+                remarksHtml = `
+                    <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h5 class="font-bold text-red-800 mb-2 flex items-center">
+                            <i class="fas fa-comment-alt mr-2" aria-hidden="true"></i>
+                            Remarks:
+                        </h5>
+                        <p class="text-red-700">${data['REMARKS']}</p>
+                    </div>
+                `;
+            }
+            
             timelineHtml += `
                 <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
                     <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
                     <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                 </div>
+                ${remarksHtml}
             `;
 
         } else {
