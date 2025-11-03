@@ -283,7 +283,7 @@
 
 <script>
     // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZL8zifmkaotIukN2S_WTcp38e2V18gcstQgC5JzEgmuPBwLYB3PcQ7curf0sqa_k/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxB44FAD8Y9rS14EeAh0QJChTAtfJqyTJtLO_m6ZxlbycDqTMRp7jd-Gf8SevfQcW8R/exec";
 
     // QUICK WIN: Add search cache
     const SEARCH_CACHE = new Map();
@@ -463,22 +463,6 @@
     }
 
     /**
-     * Determines the latest date from exception statuses to show in timeline
-     */
-    function getLatestExceptionDate(data) {
-        const exceptionDates = [
-            data['RETURNED WITH DISCREPANCY'],
-            data['ON HOLD'], 
-            data['PULL-OUT OF APPLICATION']
-        ].filter(date => date && date.toUpperCase() !== 'N/A');
-        
-        if (exceptionDates.length === 0) return null;
-        
-        // Return the most recent date
-        return exceptionDates.sort((a, b) => new Date(b) - new Date(a))[0];
-    }
-
-    /**
      * Creates and returns an HTML string for a single application result card.
      */
     function createResultCard(data) {
@@ -495,97 +479,69 @@
         // Helper function to check if a date field has a valid value
         const isStatusActive = (key) => data[key] && data[key].toUpperCase() !== 'N/A';
         
-        // --- Timeline Steps Definition ---
+        // --- Timeline Steps Definition - All columns from M to S ---
         const timelineEvents = [
             { label: 'Application Received', key: 'DATE RECEIVED', isException: false },
             { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
             { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
             { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
-            { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false }
-        ];
-
-        // --- Exception Steps ---
-        const exceptionEvents = [
-            { label: 'Returned with Discrepancy (Action Required)', key: 'RETURNED WITH DISCREPANCY', isException: true },
-            { label: 'Application On Hold (Action Required)', key: 'ON HOLD', isException: true },
+            { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false },
+            { label: 'Returned with Discrepancy', key: 'RETURNED WITH DISCREPANCY', isException: true },
+            { label: 'Application On Hold', key: 'ON HOLD', isException: true },
             { label: 'Pull-out of Application', key: 'PULL-OUT OF APPLICATION', isException: true }
         ];
 
         let timelineHtml = '';
-        let activeException = null;
+        let hasActiveException = false;
         let lastActiveIndex = -1;
 
-        // 1. Check for Active Exception based on current status
+        // 1. Check if current status is a red status
         const currentStatus = displayStatus.toLowerCase();
-        if (currentStatus.includes('returned with discrepancy')) {
-            activeException = exceptionEvents[0];
-        } else if (currentStatus.includes('on hold')) {
-            activeException = exceptionEvents[1];
-        } else if (currentStatus.includes('pull-out of application')) {
-            activeException = exceptionEvents[2];
-        }
+        const isRedStatus = currentStatus.includes('returned with discrepancy') || 
+                           currentStatus.includes('on hold') || 
+                           currentStatus.includes('pull-out of application');
 
-        // 2. Determine the last active sequential step if no exception is active
-        if (!activeException) {
-            for (let i = timelineEvents.length - 1; i >= 0; i--) {
-                if (isStatusActive(timelineEvents[i].key)) {
-                    lastActiveIndex = i;
-                    break;
-                }
+        // 2. Determine the last active sequential step
+        for (let i = timelineEvents.length - 1; i >= 0; i--) {
+            if (isStatusActive(timelineEvents[i].key)) {
+                lastActiveIndex = i;
+                break;
             }
         }
 
-        // 3. Render the timeline
-        if (activeException) {
-            const preliminarySteps = timelineEvents.slice(0, 2); 
+        // 3. Render all timeline steps that have dates
+        timelineEvents.forEach((event, index) => {
+            const dateText = data[event.key] || 'N/A';
+            const hasDate = isStatusActive(event.key);
             
-            preliminarySteps.forEach((event) => {
-                const dateText = data[event.key] || 'N/A';
-                const isActive = isStatusActive(event.key);
-                const isLastActive = false; 
-                if(isActive) {
-                    timelineHtml += createTimelineStep(event.label, dateText, true, false, isLastActive);
-                } else if (event.key === 'DATE RECEIVED') {
-                    if (dateText !== 'N/A') timelineHtml += createTimelineStep(event.label, dateText, false, false, isLastActive);
-                }
-            });
-
-            // Use the latest exception date for the timeline
-            const exceptionDate = getLatestExceptionDate(data) || data[activeException.key] || 'N/A';
-            timelineHtml += createTimelineStep(activeException.label, exceptionDate, true, true, true);
-            
-            // Add remarks section for all red statuses
-            let remarksHtml = '';
-            if (data['REMARKS'] && data['REMARKS'].toUpperCase() !== 'N/A') {
-                remarksHtml = `
-                    <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                        <h5 class="font-bold text-red-800 mb-2 flex items-center">
-                            <i class="fas fa-comment-alt mr-2" aria-hidden="true"></i>
-                            Remarks:
-                        </h5>
-                        <p class="text-red-700">${data['REMARKS']}</p>
-                    </div>
-                `;
-            }
-            
-            timelineHtml += `
-                <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
-                    <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
-                    <span class="font-bold">Remarks:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
-                </div>
-                ${remarksHtml}
-            `;
-
-        } else {
-            timelineEvents.forEach((event, index) => {
-                const dateText = data[event.key] || 'N/A';
-                const isActive = isStatusActive(event.key);
-                const isCurrent = (index === lastActiveIndex);
+            if (hasDate) {
+                const isActive = (index === lastActiveIndex);
+                const isException = event.isException;
+                const isCurrentException = isRedStatus && isException && 
+                                          ((currentStatus.includes('returned with discrepancy') && event.key === 'RETURNED WITH DISCREPANCY') ||
+                                           (currentStatus.includes('on hold') && event.key === 'ON HOLD') ||
+                                           (currentStatus.includes('pull-out of application') && event.key === 'PULL-OUT OF APPLICATION'));
                 
-                if (isActive || index <= lastActiveIndex) {
-                    timelineHtml += createTimelineStep(event.label, dateText, isCurrent, false, isCurrent);
+                if (isCurrentException) {
+                    hasActiveException = true;
                 }
-            });
+                
+                timelineHtml += createTimelineStep(event.label, dateText, isActive, isException, isActive);
+            }
+        });
+
+        // 4. Add remarks section for red statuses only
+        let remarksSection = '';
+        if (isRedStatus && data['REMARKS'] && data['REMARKS'].toUpperCase() !== 'N/A') {
+            remarksSection = `
+                <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                    <h5 class="font-bold text-red-800 mb-2 flex items-center">
+                        <i class="fas fa-comment-alt mr-2" aria-hidden="true"></i>
+                        Remarks:
+                    </h5>
+                    <p class="text-red-700">${data['REMARKS']}</p>
+                </div>
+            `;
         }
 
         // Add Optional Retirement Order section ONLY when status is "With OPTIONAL ORDER"
@@ -658,6 +614,7 @@
                         <div class="relative pl-4 space-y-3">
                             ${timelineHtml}
                         </div>
+                        ${remarksSection}
                     </div>
                     ${optionalOrderSection}
                 </div>
