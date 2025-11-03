@@ -283,7 +283,7 @@
 
 <script>
     // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzmSTlpd0UdE83ZFEdXKndtjkmOVq_cogrugA-H0GTBmN0JQVNa1M5ybxpNVeTQpixH/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzZL8zifmkaotIukN2S_WTcp38e2V18gcstQgC5JzEgmuPBwLYB3PcQ7curf0sqa_k/exec";
 
     // QUICK WIN: Add search cache
     const SEARCH_CACHE = new Map();
@@ -463,6 +463,22 @@
     }
 
     /**
+     * Determines the latest date from exception statuses to show in timeline
+     */
+    function getLatestExceptionDate(data) {
+        const exceptionDates = [
+            data['RETURNED WITH DISCREPANCY'],
+            data['ON HOLD'], 
+            data['PULL-OUT OF APPLICATION']
+        ].filter(date => date && date.toUpperCase() !== 'N/A');
+        
+        if (exceptionDates.length === 0) return null;
+        
+        // Return the most recent date
+        return exceptionDates.sort((a, b) => new Date(b) - new Date(a))[0];
+    }
+
+    /**
      * Creates and returns an HTML string for a single application result card.
      */
     function createResultCard(data) {
@@ -485,7 +501,7 @@
             { label: 'Document Review (PRBS)', key: 'DATE REVIEW', isException: false },
             { label: 'Forwarded To TDCA', key: 'DATE FORWARDED IN TCDA', isException: false },
             { label: 'Forwarded To NAPOLCOM', key: 'DATE FORWARDED IN NAPOLCOM', isException: false },
-            { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false } // NEW: Added Optional Order step
+            { label: 'With OPTIONAL ORDER', key: 'AUTHORITY DATE', isException: false }
         ];
 
         // --- Exception Steps ---
@@ -499,12 +515,14 @@
         let activeException = null;
         let lastActiveIndex = -1;
 
-        // 1. Check for Active Exception
-        for (const event of exceptionEvents) {
-            if (isStatusActive(event.key)) {
-                activeException = event;
-                break;
-            }
+        // 1. Check for Active Exception based on current status
+        const currentStatus = displayStatus.toLowerCase();
+        if (currentStatus.includes('returned with discrepancy')) {
+            activeException = exceptionEvents[0];
+        } else if (currentStatus.includes('on hold')) {
+            activeException = exceptionEvents[1];
+        } else if (currentStatus.includes('pull-out of application')) {
+            activeException = exceptionEvents[2];
         }
 
         // 2. Determine the last active sequential step if no exception is active
@@ -532,12 +550,13 @@
                 }
             });
 
-            const dateText = data[activeException.key];
-            timelineHtml += createTimelineStep(activeException.label, dateText, true, true, true);
+            // Use the latest exception date for the timeline
+            const exceptionDate = getLatestExceptionDate(data) || data[activeException.key] || 'N/A';
+            timelineHtml += createTimelineStep(activeException.label, exceptionDate, true, true, true);
             
-            // Add remarks section for red statuses only
+            // Add remarks section for all red statuses
             let remarksHtml = '';
-            if (activeException.key === 'RETURNED WITH DISCREPANCY' && data['REMARKS']) {
+            if (data['REMARKS'] && data['REMARKS'].toUpperCase() !== 'N/A') {
                 remarksHtml = `
                     <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
                         <h5 class="font-bold text-red-800 mb-2 flex items-center">
@@ -552,7 +571,7 @@
             timelineHtml += `
                 <div class="mt-4 p-3 bg-red-50 text-red-800 border border-red-200 rounded-lg text-sm font-medium">
                     <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
-                    <span class="font-bold">NOTE:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
+                    <span class="font-bold">Remarks:</span> Application requires action due to the ${activeException.label.toLowerCase()}.
                 </div>
                 ${remarksHtml}
             `;
