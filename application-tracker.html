@@ -283,7 +283,7 @@
 
 <script>
     // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxB44FAD8Y9rS14EeAh0QJChTAtfJqyTJtLO_m6ZxlbycDqTMRp7jd-Gf8SevfQcW8R/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0zMTVCE2tMVRH2J_ONF9fUEYtBiaYAg2MWXwqVVoyLRDlHN8Y2P1tOERt56U9IYR2/exec";
 
     // QUICK WIN: Add search cache
     const SEARCH_CACHE = new Map();
@@ -530,16 +530,18 @@
             }
         });
 
-        // 4. Add remarks section for red statuses only
+        // 4. Add dedicated remarks section for red statuses only
         let remarksSection = '';
         if (isRedStatus && data['REMARKS'] && data['REMARKS'].toUpperCase() !== 'N/A') {
             remarksSection = `
-                <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                    <h5 class="font-bold text-red-800 mb-2 flex items-center">
-                        <i class="fas fa-comment-alt mr-2" aria-hidden="true"></i>
-                        Remarks:
-                    </h5>
-                    <p class="text-red-700">${data['REMARKS']}</p>
+                <div class="mt-6 bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-2xl border border-red-200">
+                    <h4 class="font-semibold text-red-800 mb-4 flex items-center">
+                        <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
+                        Remarks
+                    </h4>
+                    <div class="bg-white p-4 rounded-lg border border-red-300">
+                        <p class="text-red-700 text-sm leading-relaxed">${data['REMARKS']}</p>
+                    </div>
                 </div>
             `;
         }
@@ -614,8 +616,9 @@
                         <div class="relative pl-4 space-y-3">
                             ${timelineHtml}
                         </div>
-                        ${remarksSection}
                     </div>
+                    
+                    ${remarksSection}
                     ${optionalOrderSection}
                 </div>
             </div>
