@@ -283,7 +283,7 @@
 
 <script>
     // ⚠️ REPLACE THIS WITH YOUR ACTUAL GOOGLE APPS SCRIPT WEB APP URL ⚠️
-    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0zMTVCE2tMVRH2J_ONF9fUEYtBiaYAg2MWXwqVVoyLRDlHN8Y2P1tOERt56U9IYR2/exec";
+    const GAS_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw3rdi0YHlvJBy5UFQQ6z5Mopna6mYT0w6FEn_hKxMbUcgO76IgBfhMf60sQZBRJAzS/exec";
 
     // QUICK WIN: Add search cache
     const SEARCH_CACHE = new Map();
@@ -530,20 +530,36 @@
             }
         });
 
-        // 4. Add dedicated remarks section for red statuses only
+        // 4. Add dedicated remarks section BELOW Application Progress Timeline for red statuses only
         let remarksSection = '';
-        if (isRedStatus && data['REMARKS'] && data['REMARKS'].toUpperCase() !== 'N/A') {
-            remarksSection = `
-                <div class="mt-6 bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-2xl border border-red-200">
-                    <h4 class="font-semibold text-red-800 mb-4 flex items-center">
-                        <i class="fas fa-exclamation-circle mr-2" aria-hidden="true"></i>
-                        Remarks
-                    </h4>
-                    <div class="bg-white p-4 rounded-lg border border-red-300">
-                        <p class="text-red-700 text-sm leading-relaxed">${data['REMARKS']}</p>
+        if (isRedStatus) {
+            // SPECIFICALLY look for "REMARKS" field from Column T in Google Sheets
+            const remarks = data['REMARKS'] || '';
+            const hasRemarks = remarks && remarks.toUpperCase() !== 'N/A' && remarks.trim() !== '';
+            
+            console.log('Remarks data for red status:', {
+                status: displayStatus,
+                isRedStatus: isRedStatus,
+                remarksField: remarks,
+                hasRemarks: hasRemarks,
+                fullData: data
+            });
+            
+            if (hasRemarks) {
+                remarksSection = `
+                    <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-2xl border border-red-200 mt-4">
+                        <h4 class="font-semibold text-red-800 mb-4 flex items-center">
+                            <i class="fas fa-comment-alt mr-2" aria-hidden="true"></i>
+                            Remarks
+                        </h4>
+                        <div class="bg-white p-4 rounded-lg border border-red-300">
+                            <p class="text-red-700 text-sm leading-relaxed whitespace-pre-line">${remarks}</p>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
+            } else {
+                console.log('No valid "REMARKS" found in Column T for red status:', displayStatus);
+            }
         }
 
         // Add Optional Retirement Order section ONLY when status is "With OPTIONAL ORDER"
@@ -608,6 +624,7 @@
                         </div>
                     </div>
                     
+                    <!-- Application Progress Timeline -->
                     <div class="bg-gradient-to-br from-blue-50 to-indigo-50 p-4 rounded-2xl mt-4 border border-blue-200">
                         <h4 class="font-semibold text-blue-800 mb-4 flex items-center">
                             <i class="fas fa-project-diagram mr-2" aria-hidden="true"></i>
@@ -618,7 +635,9 @@
                         </div>
                     </div>
                     
+                    <!-- Remarks Section - Only for Red Statuses from Column T -->
                     ${remarksSection}
+                    
                     ${optionalOrderSection}
                 </div>
             </div>
@@ -684,7 +703,7 @@
             }
 
             const result = await response.json();
-            console.log('Response from server:', result);
+            console.log('Full API Response:', result);
             
             if (result.status === 'success') {
                 // QUICK WIN: Cache successful results
